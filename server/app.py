@@ -1,12 +1,24 @@
 """PharmaGraph server: the HTTP API, plus the built web interface."""
+from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 
+from . import config
+from .db.migrate import migrate
+
 WEB_DIST = Path(__file__).resolve().parent.parent / "web" / "dist"
 
-app = FastAPI(title="PharmaGraph", version="0.1.0")
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    applied = migrate(config.db_path())  # creates or upgrades the database before any request
+    print(f"Data folder: {config.data_dir()}" + (f"  (applied: {', '.join(applied)})" if applied else ""))
+    yield
+
+
+app = FastAPI(title="PharmaGraph", version="0.1.0", lifespan=lifespan)
 
 
 @app.get("/api/health")
