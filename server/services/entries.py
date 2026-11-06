@@ -1,6 +1,6 @@
 """Knowledge entries (general / lecture / personal), lectures and professors."""
 from ..util import new_id, now
-from . import contexts, history
+from . import contexts, history, sources
 from .errors import Invalid
 from .history import rows
 
@@ -54,9 +54,13 @@ SCOPE_ORDER = "CASE k.scope WHEN 'general' THEN 0 WHEN 'lecture' THEN 1 ELSE 2 E
 
 
 def _with_contexts(conn, found: list[dict]) -> list[dict]:
-    by_id = contexts.contexts_for(conn, "knowledge_entry", [e["id"] for e in found])
+    """Attach each entry's conditions and evidence."""
+    ids = [e["id"] for e in found]
+    conditions = contexts.contexts_for(conn, "knowledge_entry", ids)
+    evidence = sources.evidence_for(conn, "knowledge_entry", ids)
     for e in found:
-        e["contexts"] = by_id[e["id"]]
+        e["contexts"] = conditions[e["id"]]
+        e["evidence"] = evidence[e["id"]]
     return found
 
 

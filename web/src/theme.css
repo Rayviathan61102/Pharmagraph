@@ -214,6 +214,27 @@ a.archived { color: var(--text-muted); font-style: italic; }
 .picker-results button:hover, .picker-results button:focus { background: var(--surface-2); }
 .picker-results .muted { padding: 0.3rem 0.5rem; font-weight: normal; }
 
+/* ---------- Status button and evidence ---------- */
+.badge-button { background: none; border: none; padding: 0; }
+.badge-button:hover .badge { background: var(--surface-2); }
+.subhead { font-size: 0.9rem; margin: 1rem 0 0.4rem; }
+
+.evidence { font-size: 0.85rem; margin-top: 0.3rem; }
+.evidence ul { list-style: none; padding: 0; margin: 0 0 0.2rem; }
+.evidence li { padding: 0.1rem 0; }
+.stance {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 600;
+  color: var(--accent-green);
+}
+.stance-contradicts .stance { color: var(--accent-red); }
+.stance-mentions .stance { color: var(--text-muted); }
+.evidence .remove { margin-left: 0.4rem; color: var(--text-muted); }
+.form .row { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.form .row label { flex: 1 1 8rem; }
+
 /* ---------- History ---------- */
 .history { list-style: none; padding: 0; margin: 0; }
 .history li { border-left: 2px solid var(--border); padding: 0.2rem 0 0.2rem 0.75rem; }

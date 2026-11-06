@@ -2,7 +2,7 @@
 import re
 
 from ..util import new_id, now
-from . import contexts, history
+from . import contexts, history, sources
 from .entries import AI_ALLOWED_STATUSES
 from .errors import Invalid
 from .history import rows
@@ -29,10 +29,19 @@ def _require_entity(conn, entity_id: str) -> None:
     history.require_active(history.get_row(conn, "entity", entity_id), "entity")
 
 
+def _attach(conn, found: list[dict]) -> list[dict]:
+    """Attach each relationship's conditions and evidence."""
+    ids = [r["id"] for r in found]
+    conditions = contexts.contexts_for(conn, "relationship", ids)
+    evidence = sources.evidence_for(conn, "relationship", ids)
+    for r in found:
+        r["contexts"] = conditions[r["id"]]
+        r["evidence"] = evidence[r["id"]]
+    return found
+
+
 def get_relationship(conn, relationship_id: str) -> dict:
-    rel = history.get_row(conn, "relationship", relationship_id)
-    rel["contexts"] = contexts.contexts_for(conn, "relationship", [relationship_id])[relationship_id]
-    return rel
+    return _attach(conn, [history.get_row(conn, "relationship", relationship_id)])[0]
 
 
 def create_relationship(conn, *, source_entity_id: str, target_entity_id: str, relationship_type_id: str,
@@ -89,7 +98,4 @@ def list_for_entity(conn, entity_id: str, include_archived: bool = False) -> lis
         LEFT JOIN lecture l ON l.id = r.lecture_id
         WHERE (? OR r.archived_at IS NULL)
         ORDER BY label, o.name COLLATE NOCASE""", (entity_id, entity_id, include_archived))
-    found = contexts.contexts_for(conn, "relationship", [r["id"] for r in result])
-    for r in result:
-        r["contexts"] = found[r["id"]]
-    return result
+    return _attach(conn, result)

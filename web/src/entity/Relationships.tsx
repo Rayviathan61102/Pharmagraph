@@ -7,8 +7,10 @@ import {
 } from '../api'
 import { EntityPicker } from '../EntityPicker'
 import { History } from '../History'
-import { Dialog, ErrorText, StatusBadge, askReason, entityLink } from '../ui'
+import { Dialog, ErrorText, askReason, entityLink } from '../ui'
 import { Conditions } from './Conditions'
+import { Evidence } from './Evidence'
+import { StatusButton } from './StatusDialog'
 
 const SCOPES: { value: Scope; label: string }[] = [
   { value: 'general', label: 'General scientific knowledge' },
@@ -147,11 +149,12 @@ function RelationshipRow({ rel, readOnly }: { rel: Relationship; readOnly: boole
         {rel.scope !== 'general' && (
           <span className="scope-label">{rel.scope}{rel.lecture_title && ` · ${rel.lecture_title}`}</span>
         )}
-        <StatusBadge code={rel.status_code} />
+        <StatusButton kind="relationships" id={rel.id} current={rel.status_code} readOnly={readOnly || archived} />
         {archived && <span className="muted">archived{rel.archive_reason && `: ${rel.archive_reason}`}</span>}
       </div>
       {rel.description && <div className="markdown"><Markdown>{rel.description}</Markdown></div>}
       <Conditions owner="relationships" ownerId={rel.id} conditions={rel.contexts} readOnly={readOnly || archived} />
+      <Evidence owner="relationships" ownerId={rel.id} evidence={rel.evidence} readOnly={readOnly || archived} />
       <div className="entry-actions">
         {!readOnly && !archived && <button className="link" onClick={() => setEditing(true)}>Edit</button>}
         {!readOnly && !archived && <button className="link" onClick={archive}>Archive</button>}

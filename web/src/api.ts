@@ -108,6 +108,25 @@ export type Condition = {
   value_entity_id: string | null; value_entity_name: string | null
 }
 
+export type Source = {
+  id: string; source_type: string; title: string; authors: string | null; organization: string | null
+  publication_date: string | null; edition: string | null; doi: string | null; url: string | null
+  jurisdiction: string | null; archived_at: string | null
+}
+
+export type Evidence = {
+  id: string; source_id: string; stance: 'supports' | 'contradicts' | 'mentions'; evidence_type: string
+  claim_text: string | null; locator: string | null; passage: string | null; verification_notes: string | null
+  source_title: string; source_type: string; authors: string | null; organization: string | null
+  publication_date: string | null; edition: string | null; jurisdiction: string | null
+  url: string | null; doi: string | null; created_at: string
+}
+
+export type Review = {
+  id: string; from_status_code: string | null; to_status_code: string; reviewed_by: string
+  notes: string | null; created_at: string
+}
+
 export type Relationship = {
   id: string
   source_entity_id: string
@@ -123,6 +142,7 @@ export type Relationship = {
   archived_at: string | null
   archive_reason: string | null
   contexts: Condition[]
+  evidence: Evidence[]
   // worded from the point of view of the entity being viewed:
   direction: 'out' | 'in'
   label: string
@@ -152,6 +172,7 @@ export type Entry = {
   archived_at: string | null
   archive_reason: string | null
   contexts: Condition[]
+  evidence: Evidence[]
 }
 
 export type Professor = { id: string; name: string; department: string | null }

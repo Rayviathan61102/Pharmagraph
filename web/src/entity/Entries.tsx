@@ -4,9 +4,11 @@ import { useState } from 'react'
 import Markdown from 'react-markdown'
 import { api, useLookups, useSave, type Entity, type Entry } from '../api'
 import { History } from '../History'
-import { ErrorText, StatusBadge, askReason } from '../ui'
+import { ErrorText, askReason } from '../ui'
 import { Conditions } from './Conditions'
 import { EntryForm } from './EntryForm'
+import { Evidence } from './Evidence'
+import { StatusButton } from './StatusDialog'
 
 const SCOPE_LABEL = { general: 'General', lecture: 'Lecture', personal: 'Personal' }
 
@@ -31,12 +33,13 @@ function EntryCard({ entry, readOnly }: { entry: Entry; readOnly: boolean }) {
           </span>
         )}
         {entry.counterpart_entry_id && <span className="muted" title="Saved with 'Both'">↔ linked version</span>}
-        <StatusBadge code={entry.status_code} />
+        <StatusButton kind="entries" id={entry.id} current={entry.status_code} readOnly={readOnly || archived} />
         {archived && <span className="muted">archived{entry.archive_reason && `: ${entry.archive_reason}`}</span>}
       </div>
       {entry.title && <h3>{entry.title}</h3>}
       <div className="markdown"><Markdown>{entry.body}</Markdown></div>
       <Conditions owner="entries" ownerId={entry.id} conditions={entry.contexts} readOnly={readOnly || archived} />
+      <Evidence owner="entries" ownerId={entry.id} evidence={entry.evidence} readOnly={readOnly || archived} />
       <div className="entry-actions">
         {!readOnly && !archived && <button className="link" onClick={() => setEditing(true)}>Edit</button>}
         {!readOnly && !archived && <button className="link" onClick={archive}>Archive</button>}

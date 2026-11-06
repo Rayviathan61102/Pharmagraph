@@ -3,7 +3,8 @@ import { useQuery } from '@tanstack/react-query'
 import { useState, type FormEvent } from 'react'
 import { api, useSave, type Entity } from '../api'
 import { History } from '../History'
-import { ErrorText, StatusBadge, askReason, formatTime } from '../ui'
+import { ErrorText, askReason, formatTime } from '../ui'
+import { StatusButton } from './StatusDialog'
 import { Entries } from './Entries'
 import { EntityForm } from './EntityForm'
 import { Relationships } from './Relationships'
@@ -60,7 +61,7 @@ export function EntityPage({ id }: { id: string }) {
       )}
       <header>
         <p className="muted">{entity.type_label}</p>
-        <h1>{entity.name} <StatusBadge code={entity.status_code} /></h1>
+        <h1>{entity.name} <StatusButton kind="entities" id={id} current={entity.status_code} readOnly={archived} /></h1>
         {entity.aliases.length > 0 && (
           <ul className="chips" aria-label="Other names">
             {entity.aliases.map((a) => (
