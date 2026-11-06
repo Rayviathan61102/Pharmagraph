@@ -266,6 +266,37 @@ a.archived { color: var(--text-muted); font-style: italic; }
 .form .row { display: flex; gap: 0.5rem; flex-wrap: wrap; }
 .form .row label { flex: 1 1 8rem; }
 
+/* ---------- Page navigation, legend, cautions (M8) ---------- */
+.page-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.9rem;
+  align-items: center;
+  font-size: 0.8rem;
+  padding: 0.5rem 0;
+  margin-bottom: 0.75rem;
+  border-top: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  background: var(--bg);
+  z-index: 1;
+}
+.legend { display: inline-flex; gap: 0.6rem; margin-right: 0.5rem; }
+.legend span { color: var(--scope); font-weight: 600; border-left: 3px solid var(--scope); padding-left: 0.3rem; }
+.legend .scope-lecture { border-left-style: dashed; }
+.legend .scope-personal { border-left-style: dotted; }
+.unsourced { color: var(--accent-amber); font-size: 0.75rem; }
+.caution {
+  font-size: 0.8rem;
+  color: var(--accent-amber);
+  border-left: 2px solid var(--accent-amber);
+  padding-left: 0.5rem;
+  margin: 0.3rem 0;
+}
+.sources-summary { padding-left: 1.2rem; margin: 0; }
+.sources-summary li { margin-bottom: 0.3rem; }
+.knowledge-section, .page-history { scroll-margin-top: 3rem; }
+
 /* ---------- History ---------- */
 .history { list-style: none; padding: 0; margin: 0; }
 .history li { border-left: 2px solid var(--border); padding: 0.2rem 0 0.2rem 0.75rem; }

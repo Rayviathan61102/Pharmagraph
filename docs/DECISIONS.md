@@ -21,3 +21,29 @@ Short record of decisions and of any place where the code differs from
   `knowledge_section.sort_order`, which matches spec 15.2.
 - Aliases are protected by a no-delete trigger too (they are archived, like everything else).
 - Transactions are explicit (`with transaction(conn):`). Python's hidden transaction handling is off.
+
+## M2–M8 — Implementation notes
+
+- **One gatekeeper:** `services/history.py` is the only path that changes entities, entries and
+  relationships. It saves a full snapshot revision and refreshes the search index on every change.
+- **Aliases and conditions are part of their owner's history:** adding/removing an alias bumps the
+  entity's version; adding/removing a condition bumps the entry's/relationship's version. A removed
+  condition row is deleted, but the previous revision's snapshot still contains it.
+- **Scope is fixed after creation** (general/lecture/personal). Relationship endpoints are fixed too:
+  to change them, archive and create a new one. This keeps each history meaningful.
+- **Status changes only through reviews** (`POST /api/{kind}/{id}/status`), always with a written reason.
+  A review with the same status is allowed ("re-checked, still valid") and adds no new version.
+  Only the user can set Verified; AI-origin content must start as Proposed or Needs review.
+- **Contradicting evidence** returns `suggest_disputed`; the interface asks before marking Disputed.
+  Nothing changes status silently.
+- **Source details** (title, edition, DOI …) are bibliographic facts, not claims, so editing them keeps
+  no revision.
+- **Conditions also work on knowledge entries** (e.g. dosage "adults"), not only on relationships.
+- **Search:** FTS5 trigram index of names, aliases, descriptions and entry text. Queries under
+  3 characters scan instead. Migration `003_fill_search_index.sql` indexes data created before M6.
+- **Categories** are navigation only: no revisions, can be moved (loops refused), archived.
+- **Entity page (M8):** sections follow spec 15.2, then Related concepts, Sources (every cited source
+  once, with the claims it supports) and History. General claims without a source show "no source yet";
+  unverified Dosage / Contraindications / Interactions entries show a caution.
+- **Known limitation:** reasons for archive and edits use the browser's simple prompt/fields; changes
+  made outside the app (e.g. through /docs) appear after a page reload.

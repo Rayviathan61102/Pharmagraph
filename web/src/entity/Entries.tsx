@@ -2,7 +2,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
 import Markdown from 'react-markdown'
-import { api, useLookups, useSave, type Entity, type Entry } from '../api'
+import { api, useLookups, useSave, type Entity, type Entry, type Lookups, type Section } from '../api'
 import { History } from '../History'
 import { ErrorText, askReason } from '../ui'
 import { Conditions } from './Conditions'
@@ -11,6 +11,10 @@ import { Evidence } from './Evidence'
 import { StatusButton } from './StatusDialog'
 
 const SCOPE_LABEL = { general: 'General', lecture: 'Lecture', personal: 'Personal' }
+
+// Clinical sections where unverified text gets a visible caution (spec 13: clinical and dosage claims
+// must be clearly distinguished from verified information).
+const CLINICAL_SECTIONS = new Set(['dosage', 'contraindications', 'interactions'])
 
 function EntryCard({ entry, readOnly }: { entry: Entry; readOnly: boolean }) {
   const save = useSave()
@@ -35,7 +39,11 @@ function EntryCard({ entry, readOnly }: { entry: Entry; readOnly: boolean }) {
         {entry.counterpart_entry_id && <span className="muted" title="Saved with 'Both'">↔ linked version</span>}
         <StatusButton kind="entries" id={entry.id} current={entry.status_code} readOnly={readOnly || archived} />
         {archived && <span className="muted">archived{entry.archive_reason && `: ${entry.archive_reason}`}</span>}
+        {entry.scope === 'general' && entry.evidence.length === 0 && <span className="unsourced">no source yet</span>}
       </div>
+      {CLINICAL_SECTIONS.has(entry.section_id) && entry.status_code !== 'verified' && (
+        <p className="caution">Not verified — always check current guidelines before any clinical use.</p>
+      )}
       {entry.title && <h3>{entry.title}</h3>}
       <div className="markdown"><Markdown>{entry.body}</Markdown></div>
       <Conditions owner="entries" ownerId={entry.id} conditions={entry.contexts} readOnly={readOnly || archived} />
@@ -57,27 +65,33 @@ function EntryCard({ entry, readOnly }: { entry: Entry; readOnly: boolean }) {
   )
 }
 
-export function Entries({ entity, showArchived }: { entity: Entity; showArchived: boolean }) {
-  const { data: lookups } = useLookups()
-  const [addingTo, setAddingTo] = useState<string | null>(null)
-  const { data: entries } = useQuery({
+export function useEntries(entity: Entity, showArchived: boolean) {
+  return useQuery({
     queryKey: ['entries', entity.id, showArchived],
     queryFn: () => api.get<Entry[]>(`/entities/${entity.id}/entries?include_archived=${showArchived}`),
   })
+}
+
+/** The sections this entity type always shows, plus any section that already has entries, in spec order. */
+export function visibleSections(lookups: Lookups, entity: Entity, entries: Entry[]): Section[] {
+  const always = new Set(lookups.type_sections.filter((t) => t.entity_type_id === entity.entity_type_id)
+    .map((t) => t.section_id))
+  return lookups.sections.filter((s) => always.has(s.id) || entries.some((e) => e.section_id === s.id))
+}
+
+export function Entries({ entity, showArchived }: { entity: Entity; showArchived: boolean }) {
+  const { data: lookups } = useLookups()
+  const [addingTo, setAddingTo] = useState<string | null>(null)
+  const { data: entries } = useEntries(entity, showArchived)
   if (!lookups || !entries) return null
   const readOnly = !!entity.archived_at
 
-  // Show the sections this entity type always has, plus any section that already has entries.
-  const always = new Set(lookups.type_sections.filter((t) => t.entity_type_id === entity.entity_type_id)
-    .map((t) => t.section_id))
-  const sections = lookups.sections.filter((s) => always.has(s.id) || entries.some((e) => e.section_id === s.id))
-
   return (
     <>
-      {sections.map((section) => {
+      {visibleSections(lookups, entity, entries).map((section) => {
         const inSection = entries.filter((e) => e.section_id === section.id)
         return (
-          <section key={section.id} className="knowledge-section">
+          <section key={section.id} id={`sec-${section.id}`} className="knowledge-section">
             <div className="section-head">
               <h2>{section.label}</h2>
               {!readOnly && <button className="link" onClick={() => setAddingTo(section.id)}>+ Add</button>}

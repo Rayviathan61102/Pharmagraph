@@ -151,6 +151,7 @@ function RelationshipRow({ rel, readOnly }: { rel: Relationship; readOnly: boole
         )}
         <StatusButton kind="relationships" id={rel.id} current={rel.status_code} readOnly={readOnly || archived} />
         {archived && <span className="muted">archived{rel.archive_reason && `: ${rel.archive_reason}`}</span>}
+        {rel.scope === 'general' && rel.evidence.length === 0 && <span className="unsourced">no source yet</span>}
       </div>
       {rel.description && <div className="markdown"><Markdown>{rel.description}</Markdown></div>}
       <Conditions owner="relationships" ownerId={rel.id} conditions={rel.contexts} readOnly={readOnly || archived} />
@@ -172,18 +173,22 @@ function RelationshipRow({ rel, readOnly }: { rel: Relationship; readOnly: boole
   )
 }
 
-export function Relationships({ entity, showArchived }: { entity: Entity; showArchived: boolean }) {
-  const [adding, setAdding] = useState(false)
-  const { data } = useQuery({
+export function useRelationships(entity: Entity, showArchived: boolean) {
+  return useQuery({
     queryKey: ['relationships', entity.id, showArchived],
     queryFn: () => api.get<Relationship[]>(`/entities/${entity.id}/relationships?include_archived=${showArchived}`),
   })
+}
+
+export function Relationships({ entity, showArchived }: { entity: Entity; showArchived: boolean }) {
+  const [adding, setAdding] = useState(false)
+  const { data } = useRelationships(entity, showArchived)
   const readOnly = !!entity.archived_at
   const groups = new Map<string, Relationship[]>()
   data?.forEach((r) => groups.set(r.label, [...(groups.get(r.label) ?? []), r]))
 
   return (
-    <section className="knowledge-section">
+    <section id="sec-related" className="knowledge-section">
       <div className="section-head">
         <h2>Related concepts</h2>
         {!readOnly && <button className="link" onClick={() => setAdding(true)}>+ Add relationship</button>}

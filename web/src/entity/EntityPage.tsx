@@ -1,6 +1,6 @@
 // Everything about one entity.
 import { useQuery } from '@tanstack/react-query'
-import { useState, type FormEvent } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
 import { api, useSave, type Entity } from '../api'
 import { History } from '../History'
 import { ErrorText, askReason, formatTime } from '../ui'
@@ -8,6 +8,7 @@ import { StatusButton } from './StatusDialog'
 import { Entries } from './Entries'
 import { EntityCategories } from './EntityCategories'
 import { EntityForm } from './EntityForm'
+import { PageNav, SourcesSummary } from './PageExtras'
 import { Relationships } from './Relationships'
 
 const ALIAS_KINDS = ['synonym', 'abbreviation', 'brand_name', 'inn', 'usan', 'chemical_name', 'local_name',
@@ -42,6 +43,9 @@ export function EntityPage({ id }: { id: string }) {
   const { data: entity, error } = useQuery({
     queryKey: ['entity', id], queryFn: () => api.get<Entity>(`/entities/${id}`),
   })
+  useEffect(() => {
+    document.title = entity ? `${entity.name} · PharmaGraph` : 'PharmaGraph'
+  }, [entity?.name])
   if (error) return <p className="error">{String(error)}</p>
   if (!entity) return null
   const archived = !!entity.archived_at
@@ -95,10 +99,12 @@ export function EntityPage({ id }: { id: string }) {
         </label>
       </section>
 
+      <PageNav entity={entity} showArchived={showArchived} />
       <Entries entity={entity} showArchived={showArchived} />
       <Relationships entity={entity} showArchived={showArchived} />
+      <SourcesSummary entity={entity} showArchived={showArchived} />
 
-      <section className="page-history">
+      <section id="sec-history" className="page-history">
         <h2>Revision history of this entity</h2>
         <History kind="entities" id={id} />
       </section>
