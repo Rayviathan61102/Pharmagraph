@@ -6,6 +6,7 @@ import { History } from '../History'
 import { ErrorText, askReason, formatTime } from '../ui'
 import { StatusButton } from './StatusDialog'
 import { Entries } from './Entries'
+import { EntityCategories } from './EntityCategories'
 import { EntityForm } from './EntityForm'
 import { Relationships } from './Relationships'
 
@@ -75,6 +76,7 @@ export function EntityPage({ id }: { id: string }) {
             ))}
           </ul>
         )}
+        <EntityCategories entityId={id} readOnly={archived} />
         {!archived && (
           <div className="actions">
             <button onClick={() => setEditing(true)}>Edit</button>

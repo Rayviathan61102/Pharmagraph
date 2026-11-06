@@ -97,6 +97,34 @@ input[type='checkbox'], input[type='radio'] { width: auto; }
 .entity-list li a:hover { background: var(--surface-2); text-decoration: none; }
 .entity-list li a.current { background: var(--surface-2); border-left: 2px solid var(--accent-blue); }
 .entity-list li a.archived { color: var(--text-muted); font-style: italic; }
+/* ---------- Category tree ---------- */
+.list-head, .category-tree h2 { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin: 0.5rem 0 0.25rem; }
+.tree { list-style: none; margin: 0; padding: 0 0 0 0.75rem; }
+.category-tree > .tree { padding-left: 0; }
+.tree-row { display: flex; align-items: center; }
+.tree-toggle {
+  flex: 1;
+  text-align: left;
+  background: none;
+  border: none;
+  padding: 0.15rem 0.3rem;
+  display: flex;
+  gap: 0.35rem;
+  align-items: center;
+}
+.tree-toggle:hover { background: var(--surface-2); }
+.tree-arrow { color: var(--text-muted); width: 0.8rem; }
+.tree-count { margin-left: auto; font-size: 0.7rem; color: var(--text-muted); }
+/* Transparent (not hidden) until hover/focus, so keyboard users can still Tab to them. */
+.tree-tool { background: none; border: none; padding: 0 0.3rem; color: var(--text-muted); opacity: 0; }
+.tree-row:hover .tree-tool, .tree-tool:focus-visible { opacity: 1; }
+.tree-entity { display: block; padding: 0.1rem 0.3rem 0.1rem 1.4rem; color: var(--text); font-size: 0.9rem; }
+.tree-entity.current { background: var(--surface-2); border-left: 2px solid var(--accent-blue); }
+.tree-empty { margin: 0; padding-left: 1.4rem; font-size: 0.8rem; }
+.entity-categories { display: flex; flex-wrap: wrap; gap: 0.4rem; align-items: center; font-size: 0.85rem; }
+.entity-categories .chips { margin: 0; }
+.entity-categories select { width: auto; font-size: 0.85rem; padding: 0.1rem 0.3rem; }
+
 .hit-detail { display: block; font-size: 0.75rem; color: var(--text-muted); }
 .snippet { display: block; white-space: normal; }
 mark { background: none; color: var(--accent-amber); font-weight: 600; }

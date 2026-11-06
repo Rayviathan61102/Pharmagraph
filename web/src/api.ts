@@ -108,6 +108,16 @@ export type Condition = {
   value_entity_id: string | null; value_entity_name: string | null
 }
 
+export type CategoryNode = {
+  id: string; name: string; description: string | null; parent_id: string | null
+  child_count: number; entity_count: number
+}
+export type CategoryPath = { id: string; name: string; parent_id: string | null; path: string }
+
+export function useAllCategories() {
+  return useQuery({ queryKey: ['categories', 'all'], queryFn: () => api.get<CategoryPath[]>('/categories') })
+}
+
 export type Source = {
   id: string; source_type: string; title: string; authors: string | null; organization: string | null
   publication_date: string | null; edition: string | null; doi: string | null; url: string | null
