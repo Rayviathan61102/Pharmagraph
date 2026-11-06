@@ -188,6 +188,32 @@ input[type='checkbox'], input[type='radio'] { width: auto; }
 .form label.choice:has(input:checked) { border-left-color: var(--accent-blue); background: var(--surface-2); }
 .choice input { margin-top: 0.25rem; }
 
+/* ---------- Conditions and relationships ---------- */
+.conditions { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; font-size: 0.85rem; }
+.conditions .chips { margin: 0.2rem 0; }
+.chip.condition { border-color: var(--accent-amber); }
+.rel-group h3 { font-size: 0.85rem; font-weight: normal; color: var(--text-muted); margin: 0.75rem 0 0.3rem; }
+.rel-group h3 em { color: var(--text); font-style: normal; font-weight: 600; }
+.rel-group ul { list-style: none; margin: 0; padding: 0; }
+.relationship {
+  border-left: 3px solid var(--scope);
+  padding: 0.35rem 0.75rem;
+  margin-bottom: 0.4rem;
+  background: var(--surface);
+  border-radius: var(--radius);
+}
+.relationship.scope-lecture { border-left-style: dashed; }
+.relationship.scope-personal { border-left-style: dotted; border-left-width: 4px; }
+.relationship.archived { opacity: 0.6; }
+.relationship .entry-meta { font-size: 0.9rem; }
+a.archived { color: var(--text-muted); font-style: italic; }
+
+.picker { display: block; margin-top: 0.25rem; }
+.picker-results { display: flex; flex-direction: column; border: 1px solid var(--border); border-top: none; }
+.picker-results button { text-align: left; border: none; border-radius: 0; background: var(--bg); }
+.picker-results button:hover, .picker-results button:focus { background: var(--surface-2); }
+.picker-results .muted { padding: 0.3rem 0.5rem; font-weight: normal; }
+
 /* ---------- History ---------- */
 .history { list-style: none; padding: 0; margin: 0; }
 .history li { border-left: 2px solid var(--border); padding: 0.2rem 0 0.2rem 0.75rem; }

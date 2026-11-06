@@ -1,6 +1,6 @@
 """Knowledge entries (general / lecture / personal), lectures and professors."""
 from ..util import new_id, now
-from . import history
+from . import contexts, history
 from .errors import Invalid
 from .history import rows
 
@@ -53,16 +53,23 @@ ENTRY_SELECT = """
 SCOPE_ORDER = "CASE k.scope WHEN 'general' THEN 0 WHEN 'lecture' THEN 1 ELSE 2 END"
 
 
+def _with_contexts(conn, found: list[dict]) -> list[dict]:
+    by_id = contexts.contexts_for(conn, "knowledge_entry", [e["id"] for e in found])
+    for e in found:
+        e["contexts"] = by_id[e["id"]]
+    return found
+
+
 def get_entry(conn, entry_id: str) -> dict:
     history.get_row(conn, "knowledge_entry", entry_id)  # 404 if missing
-    return dict(conn.execute(f"{ENTRY_SELECT} WHERE k.id = ?", (entry_id,)).fetchone())
+    return _with_contexts(conn, rows(conn, f"{ENTRY_SELECT} WHERE k.id = ?", (entry_id,)))[0]
 
 
 def list_entries(conn, entity_id: str, include_archived: bool = False) -> list[dict]:
     history.get_row(conn, "entity", entity_id)
-    return rows(conn, f"""{ENTRY_SELECT}
+    return _with_contexts(conn, rows(conn, f"""{ENTRY_SELECT}
         WHERE k.entity_id = ? AND (? OR k.archived_at IS NULL)
-        ORDER BY s.sort_order, {SCOPE_ORDER}, k.sort_order, k.created_at""", (entity_id, include_archived))
+        ORDER BY s.sort_order, {SCOPE_ORDER}, k.sort_order, k.created_at""", (entity_id, include_archived)))
 
 
 def _insert_entry(conn, entity_id, scope, section_id, body, title, lecture_id, status_code, origin) -> str:

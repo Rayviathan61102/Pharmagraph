@@ -9,7 +9,7 @@ from fastapi.staticfiles import StaticFiles
 
 from . import config
 from .db.migrate import migrate
-from .routes import entities, entries, history, lookups
+from .routes import entities, entries, history, lookups, relationships
 from .services.errors import Conflict, Invalid, NotFound
 
 WEB_DIST = Path(__file__).resolve().parent.parent / "web" / "dist"
@@ -23,7 +23,7 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="PharmaGraph", version="0.1.0", lifespan=lifespan)
-for module in (lookups, entities, entries, history):
+for module in (lookups, entities, entries, relationships, history):
     app.include_router(module.router)
 
 

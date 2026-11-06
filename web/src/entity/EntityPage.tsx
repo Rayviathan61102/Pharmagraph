@@ -6,6 +6,7 @@ import { History } from '../History'
 import { ErrorText, StatusBadge, askReason, formatTime } from '../ui'
 import { Entries } from './Entries'
 import { EntityForm } from './EntityForm'
+import { Relationships } from './Relationships'
 
 const ALIAS_KINDS = ['synonym', 'abbreviation', 'brand_name', 'inn', 'usan', 'chemical_name', 'local_name',
   'misspelling', 'other']
@@ -87,11 +88,12 @@ export function EntityPage({ id }: { id: string }) {
         {!archived && <AliasAdder entityId={id} />}
         <label className="check">
           <input type="checkbox" checked={showArchived} onChange={(e) => setShowArchived(e.target.checked)} />
-          Show archived entries
+          Show archived entries and relationships
         </label>
       </section>
 
       <Entries entity={entity} showArchived={showArchived} />
+      <Relationships entity={entity} showArchived={showArchived} />
 
       <section className="page-history">
         <h2>Revision history of this entity</h2>

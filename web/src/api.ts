@@ -103,6 +103,35 @@ export type HistoryKind = 'entities' | 'entries' | 'relationships'
 
 export type Scope = 'general' | 'lecture' | 'personal'
 
+export type Condition = {
+  id: string; context_kind_id: string; kind_label: string; value_text: string | null
+  value_entity_id: string | null; value_entity_name: string | null
+}
+
+export type Relationship = {
+  id: string
+  source_entity_id: string
+  target_entity_id: string
+  relationship_type_id: string
+  description: string | null
+  scope: Scope
+  lecture_id: string | null
+  lecture_title: string | null
+  status_code: string
+  origin: string
+  version: number
+  archived_at: string | null
+  archive_reason: string | null
+  contexts: Condition[]
+  // worded from the point of view of the entity being viewed:
+  direction: 'out' | 'in'
+  label: string
+  other_id: string
+  other_name: string
+  other_type_id: string
+  other_archived: number
+}
+
 export type Entry = {
   id: string
   entity_id: string
@@ -122,6 +151,7 @@ export type Entry = {
   updated_at: string
   archived_at: string | null
   archive_reason: string | null
+  contexts: Condition[]
 }
 
 export type Professor = { id: string; name: string; department: string | null }
