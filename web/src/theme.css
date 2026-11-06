@@ -113,7 +113,19 @@ input[type='checkbox'], input[type='radio'] { width: auto; }
   align-items: center;
 }
 .tree-toggle:hover { background: var(--surface-2); }
-.tree-arrow { color: var(--text-muted); width: 0.8rem; }
+/* Chevron ">" that turns to point down when the folder is open. */
+.tree-arrow { width: 0.7rem; height: 0.7rem; flex: none; color: var(--branch, var(--text-muted)); }
+.tree-toggle[aria-expanded='true'] > .tree-arrow { transform: rotate(90deg); }
+
+/* Each top-level category gets its own muted colour; everything inside it inherits that colour. */
+.category-tree > .tree > li:nth-child(6n+1) { --branch: var(--accent-blue); }
+.category-tree > .tree > li:nth-child(6n+2) { --branch: var(--accent-violet); }
+.category-tree > .tree > li:nth-child(6n+3) { --branch: var(--accent-green); }
+.category-tree > .tree > li:nth-child(6n+4) { --branch: var(--accent-amber); }
+.category-tree > .tree > li:nth-child(6n+5) { --branch: #5fa3a3; }
+.category-tree > .tree > li:nth-child(6n+6) { --branch: #b57f98; }
+.category-tree .tree .tree { border-left: 1px solid color-mix(in srgb, var(--branch) 40%, transparent); margin-left: 0.6rem; padding-left: 0.4rem; }
+.category-tree > .tree > li > .tree-row .tree-toggle { color: var(--branch); }
 .tree-count { margin-left: auto; font-size: 0.7rem; color: var(--text-muted); }
 /* Transparent (not hidden) until hover/focus, so keyboard users can still Tab to them. */
 .tree-tool { background: none; border: none; padding: 0 0.3rem; color: var(--text-muted); opacity: 0; }

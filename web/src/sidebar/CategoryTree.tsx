@@ -36,7 +36,10 @@ function CategoryItem({ node, currentId }: { node: CategoryNode; currentId?: str
     <li>
       <div className="tree-row">
         <button className="tree-toggle" aria-expanded={open} onClick={() => setOpen(!open)}>
-          <span className="tree-arrow" aria-hidden>{open ? '▾' : '▸'}</span>
+          <svg className="tree-arrow" viewBox="0 0 10 10" aria-hidden>
+            <path d="M3.5 1.5 7 5 3.5 8.5" fill="none" stroke="currentColor" strokeWidth="1.6"
+              strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
           {node.name}
           {node.entity_count > 0 && <span className="tree-count">{node.entity_count}</span>}
         </button>
