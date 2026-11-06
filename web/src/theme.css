@@ -97,6 +97,9 @@ input[type='checkbox'], input[type='radio'] { width: auto; }
 .entity-list li a:hover { background: var(--surface-2); text-decoration: none; }
 .entity-list li a.current { background: var(--surface-2); border-left: 2px solid var(--accent-blue); }
 .entity-list li a.archived { color: var(--text-muted); font-style: italic; }
+.hit-detail { display: block; font-size: 0.75rem; color: var(--text-muted); }
+.snippet { display: block; white-space: normal; }
+mark { background: none; color: var(--accent-amber); font-weight: 600; }
 .check { display: flex; gap: 0.4rem; align-items: center; color: var(--text-muted); }
 
 /* ---------- Entity page ---------- */

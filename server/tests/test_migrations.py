@@ -11,7 +11,8 @@ from server.util import now
 
 def test_new_data_folder_gets_a_database(data_dir):
     applied = migrate(config.db_path())
-    assert applied == ["001_initial.sql", "002_default_data.sql"]
+    assert applied[:2] == ["001_initial.sql", "002_default_data.sql"]
+    assert applied == sorted(applied)
     assert config.db_path().exists()
 
 
@@ -80,7 +81,8 @@ def test_failing_migration_changes_nothing(data_dir, tmp_path):
     folder = tmp_path / "migrations"
     shutil.copytree(MIGRATIONS_DIR, folder)
     migrate(config.db_path(), folder)
-    (folder / "003_broken.sql").write_text(
+    applied_before = len(list(folder.glob("*.sql")))
+    (folder / "999_broken.sql").write_text(
         "CREATE TABLE half_done (id TEXT);\nTHIS IS NOT SQL;", encoding="utf-8")
     with pytest.raises(sqlite3.OperationalError):
         migrate(config.db_path(), folder)
@@ -89,4 +91,4 @@ def test_failing_migration_changes_nothing(data_dir, tmp_path):
     versions = [r[0] for r in check.execute("SELECT version FROM schema_migration")]
     check.close()
     assert "half_done" not in tables
-    assert versions == [1, 2]
+    assert len(versions) == applied_before and 999 not in versions

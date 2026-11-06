@@ -6,6 +6,7 @@ in the same transaction as the change itself, so no edit can ever lose the previ
 import json
 
 from ..util import new_id, now
+from . import search
 from .errors import Invalid, NotFound
 
 # Versioned table -> the column in `revision` that points to it.
@@ -50,6 +51,11 @@ def record(conn, table: str, row_id: str, change_kind: str, reason: str | None =
         "changed_by, reason, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
         (new_id(), row_id, snap["version"], change_kind, json.dumps(snap, ensure_ascii=False),
          changed_by, reason, now()))
+    # Every change passes through here, so this is the one place that keeps search up to date.
+    if table == "entity":
+        search.reindex_entity(conn, row_id)
+    elif table == "knowledge_entry":
+        search.reindex_entity(conn, snap["entity_id"])
 
 
 def bump(conn, table: str, row_id: str, change_kind: str, reason: str | None = None,
