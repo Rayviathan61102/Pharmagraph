@@ -4,6 +4,7 @@ import { useState, type FormEvent } from 'react'
 import { api, useSave, type Entity } from '../api'
 import { History } from '../History'
 import { ErrorText, StatusBadge, askReason, formatTime } from '../ui'
+import { Entries } from './Entries'
 import { EntityForm } from './EntityForm'
 
 const ALIAS_KINDS = ['synonym', 'abbreviation', 'brand_name', 'inn', 'usan', 'chemical_name', 'local_name',
@@ -34,6 +35,7 @@ function AliasAdder({ entityId }: { entityId: string }) {
 export function EntityPage({ id }: { id: string }) {
   const save = useSave()
   const [editing, setEditing] = useState(false)
+  const [showArchived, setShowArchived] = useState(false)
   const { data: entity, error } = useQuery({
     queryKey: ['entity', id], queryFn: () => api.get<Entity>(`/entities/${id}`),
   })
@@ -81,13 +83,18 @@ export function EntityPage({ id }: { id: string }) {
       </header>
 
       <section>
-        <h2>Overview</h2>
-        <p>{entity.description || <span className="muted">No description yet.</span>}</p>
+        <p className="lead">{entity.description || <span className="muted">No short description yet.</span>}</p>
         {!archived && <AliasAdder entityId={id} />}
+        <label className="check">
+          <input type="checkbox" checked={showArchived} onChange={(e) => setShowArchived(e.target.checked)} />
+          Show archived entries
+        </label>
       </section>
 
-      <section>
-        <h2>Revision history</h2>
+      <Entries entity={entity} showArchived={showArchived} />
+
+      <section className="page-history">
+        <h2>Revision history of this entity</h2>
         <History kind="entities" id={id} />
       </section>
 

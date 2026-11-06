@@ -65,7 +65,7 @@ input, select, textarea {
   width: 100%;
 }
 textarea { resize: vertical; }
-input[type='checkbox'] { width: auto; }
+input[type='checkbox'], input[type='radio'] { width: auto; }
 
 /* ---------- Layout ---------- */
 .layout { display: grid; grid-template-columns: 280px 1fr; min-height: 100vh; }
@@ -147,6 +147,47 @@ input[type='checkbox'] { width: auto; }
 .inline-form input { flex: 1 1 12rem; width: auto; }
 .inline-form select { width: auto; }
 
+/* ---------- Knowledge entries ---------- */
+/* Scope colours: general = blue, lecture = violet, personal = green (also used in the form). */
+.scope-general { --scope: var(--accent-blue); }
+.scope-lecture { --scope: var(--accent-violet); }
+.scope-personal { --scope: var(--accent-green); }
+
+.lead { font-size: 1rem; margin: 0 0 0.5rem; }
+.knowledge-section { border-top: 1px solid var(--border); padding-top: 0.75rem; }
+.section-head { display: flex; justify-content: space-between; align-items: baseline; }
+.entry {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--scope);
+  border-radius: var(--radius);
+  padding: 0.6rem 0.9rem;
+  margin-bottom: 0.6rem;
+}
+.entry.scope-personal { border-left-style: dotted; border-left-width: 4px; }
+.entry.scope-lecture { border-left-style: dashed; }
+.entry.archived { opacity: 0.6; }
+.entry h3 { font-size: 0.95rem; margin: 0.3rem 0 0; }
+.entry-meta { display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap; font-size: 0.8rem; }
+.scope-label { color: var(--scope); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
+.entry-actions { display: flex; gap: 1rem; font-size: 0.85rem; }
+.markdown p { margin: 0.4rem 0; }
+.markdown ul, .markdown ol { margin: 0.3rem 0; padding-left: 1.4rem; }
+.page-history { border-top: 1px solid var(--border); padding-top: 0.75rem; margin-top: 1.5rem; }
+
+.choices { border: 1px solid var(--border); border-radius: var(--radius); padding: 0.5rem 0.75rem; margin: 0; }
+.choices legend { font-weight: 600; padding: 0 0.25rem; }
+.form label.choice {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  font-weight: normal;
+  padding: 0.3rem 0.4rem;
+  border-left: 3px solid transparent;
+}
+.form label.choice:has(input:checked) { border-left-color: var(--accent-blue); background: var(--surface-2); }
+.choice input { margin-top: 0.25rem; }
+
 /* ---------- History ---------- */
 .history { list-style: none; padding: 0; margin: 0; }
 .history li { border-left: 2px solid var(--border); padding: 0.2rem 0 0.2rem 0.75rem; }
@@ -168,7 +209,10 @@ input[type='checkbox'] { width: auto; }
 }
 .dialog::backdrop { background: rgb(0 0 0 / 0.6); }
 .form { display: flex; flex-direction: column; gap: 0.75rem; }
-.form label { display: flex; flex-direction: column; gap: 0.25rem; font-weight: 600; }
+/* Label text (and its hint) on one line, the field below it. */
+.form label { display: block; font-weight: 600; }
+.form label > input, .form label > select, .form label > textarea { display: block; margin-top: 0.25rem; }
+.form label > .inline-form { margin-top: 0.25rem; }
 .form .actions { justify-content: flex-end; }
 .warning { background: var(--surface-2); border-left: 3px solid var(--accent-amber); padding: 0.5rem 0.75rem; }
 .warning p, .warning ul { margin: 0 0 0.5rem; }

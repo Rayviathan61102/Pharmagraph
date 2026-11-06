@@ -100,3 +100,36 @@ export type Revision = {
 }
 
 export type HistoryKind = 'entities' | 'entries' | 'relationships'
+
+export type Scope = 'general' | 'lecture' | 'personal'
+
+export type Entry = {
+  id: string
+  entity_id: string
+  scope: Scope
+  section_id: string
+  section_label: string
+  title: string | null
+  body: string
+  lecture_id: string | null
+  lecture_title: string | null
+  professor_name: string | null
+  counterpart_entry_id: string | null
+  status_code: string
+  origin: string
+  version: number
+  created_at: string
+  updated_at: string
+  archived_at: string | null
+  archive_reason: string | null
+}
+
+export type Professor = { id: string; name: string; department: string | null }
+export type Lecture = {
+  id: string; title: string; course_code: string | null; course_name: string | null
+  professor_id: string | null; professor_name: string | null; lecture_date: string | null
+}
+
+export function useLectures() {
+  return useQuery({ queryKey: ['lectures'], queryFn: () => api.get<Lecture[]>('/lectures') })
+}

@@ -1,0 +1,91 @@
+// The knowledge sections of an entity page: Overview, Mechanism, Pharmacokinetics ... each with its entries.
+import { useQuery } from '@tanstack/react-query'
+import { useState } from 'react'
+import Markdown from 'react-markdown'
+import { api, useLookups, useSave, type Entity, type Entry } from '../api'
+import { History } from '../History'
+import { ErrorText, StatusBadge, askReason } from '../ui'
+import { EntryForm } from './EntryForm'
+
+const SCOPE_LABEL = { general: 'General', lecture: 'Lecture', personal: 'Personal' }
+
+function EntryCard({ entry, readOnly }: { entry: Entry; readOnly: boolean }) {
+  const save = useSave()
+  const [editing, setEditing] = useState(false)
+  const [showHistory, setShowHistory] = useState(false)
+  const archived = !!entry.archived_at
+
+  const archive = () => {
+    const reason = askReason('Archive this entry? It will be hidden but never deleted.')
+    if (reason !== null) save.mutate(() => api.post(`/entries/${entry.id}/archive`, { reason: reason || null }))
+  }
+
+  return (
+    <div className={`entry scope-${entry.scope}${archived ? ' archived' : ''}`}>
+      <div className="entry-meta">
+        <span className="scope-label">{SCOPE_LABEL[entry.scope]}</span>
+        {entry.scope === 'lecture' && (
+          <span className="muted">
+            {[entry.lecture_title, entry.professor_name].filter(Boolean).join(' · ') || 'lecture not recorded'}
+          </span>
+        )}
+        {entry.counterpart_entry_id && <span className="muted" title="Saved with 'Both'">↔ linked version</span>}
+        <StatusBadge code={entry.status_code} />
+        {archived && <span className="muted">archived{entry.archive_reason && `: ${entry.archive_reason}`}</span>}
+      </div>
+      {entry.title && <h3>{entry.title}</h3>}
+      <div className="markdown"><Markdown>{entry.body}</Markdown></div>
+      <div className="entry-actions">
+        {!readOnly && !archived && <button className="link" onClick={() => setEditing(true)}>Edit</button>}
+        {!readOnly && !archived && <button className="link" onClick={archive}>Archive</button>}
+        {!readOnly && archived && (
+          <button className="link" onClick={() => save.mutate(() => api.post(`/entries/${entry.id}/unarchive`))}>Restore</button>
+        )}
+        <button className="link" onClick={() => setShowHistory(!showHistory)}>
+          {showHistory ? 'Hide history' : `History (v${entry.version})`}
+        </button>
+      </div>
+      <ErrorText error={save.error} />
+      {showHistory && <History kind="entries" id={entry.id} />}
+      {editing && <EntryForm entityId={entry.entity_id} entry={entry} onClose={() => setEditing(false)} />}
+    </div>
+  )
+}
+
+export function Entries({ entity, showArchived }: { entity: Entity; showArchived: boolean }) {
+  const { data: lookups } = useLookups()
+  const [addingTo, setAddingTo] = useState<string | null>(null)
+  const { data: entries } = useQuery({
+    queryKey: ['entries', entity.id, showArchived],
+    queryFn: () => api.get<Entry[]>(`/entities/${entity.id}/entries?include_archived=${showArchived}`),
+  })
+  if (!lookups || !entries) return null
+  const readOnly = !!entity.archived_at
+
+  // Show the sections this entity type always has, plus any section that already has entries.
+  const always = new Set(lookups.type_sections.filter((t) => t.entity_type_id === entity.entity_type_id)
+    .map((t) => t.section_id))
+  const sections = lookups.sections.filter((s) => always.has(s.id) || entries.some((e) => e.section_id === s.id))
+
+  return (
+    <>
+      {sections.map((section) => {
+        const inSection = entries.filter((e) => e.section_id === section.id)
+        return (
+          <section key={section.id} className="knowledge-section">
+            <div className="section-head">
+              <h2>{section.label}</h2>
+              {!readOnly && <button className="link" onClick={() => setAddingTo(section.id)}>+ Add</button>}
+            </div>
+            {inSection.length === 0 && <p className="muted">Nothing recorded yet.</p>}
+            {inSection.map((e) => <EntryCard key={e.id} entry={e} readOnly={readOnly} />)}
+          </section>
+        )
+      })}
+      {!readOnly && (
+        <button onClick={() => setAddingTo('overview')}>+ Add knowledge to another section</button>
+      )}
+      {addingTo && <EntryForm entityId={entity.id} sectionId={addingTo} onClose={() => setAddingTo(null)} />}
+    </>
+  )
+}
