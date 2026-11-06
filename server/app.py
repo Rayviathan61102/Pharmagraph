@@ -1,12 +1,16 @@
 """PharmaGraph server: the HTTP API, plus the built web interface."""
+import sqlite3
 from contextlib import asynccontextmanager
 from pathlib import Path
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from . import config
 from .db.migrate import migrate
+from .routes import entities, history, lookups
+from .services.errors import Conflict, Invalid, NotFound
 
 WEB_DIST = Path(__file__).resolve().parent.parent / "web" / "dist"
 
@@ -19,6 +23,30 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="PharmaGraph", version="0.1.0", lifespan=lifespan)
+for module in (lookups, entities, history):
+    app.include_router(module.router)
+
+
+# Turn service-layer problems into clear HTTP errors with a readable "detail" message.
+@app.exception_handler(NotFound)
+def not_found(request: Request, exc: NotFound):
+    return JSONResponse({"detail": str(exc)}, status_code=404)
+
+
+@app.exception_handler(Invalid)
+def invalid(request: Request, exc: Invalid):
+    return JSONResponse({"detail": str(exc)}, status_code=400)
+
+
+@app.exception_handler(Conflict)
+def conflict(request: Request, exc: Conflict):
+    return JSONResponse({"detail": str(exc), **exc.details}, status_code=409)
+
+
+@app.exception_handler(sqlite3.IntegrityError)
+def rejected_by_database(request: Request, exc: sqlite3.IntegrityError):
+    # The database's own rules (foreign keys, CHECKs, triggers) caught something the services did not.
+    return JSONResponse({"detail": f"Rejected by the database: {exc}"}, status_code=400)
 
 
 @app.get("/api/health")

@@ -1,21 +1,27 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
+import { EntityForm } from './entity/EntityForm'
+import { EntityList } from './entity/EntityList'
+import { EntityPage } from './entity/EntityPage'
+import { useRoute } from './ui'
 
 export default function App() {
-  const [server, setServer] = useState('checking…')
-
-  useEffect(() => {
-    fetch('/api/health')
-      .then((r) => r.json())
-      .then((d) => setServer(`connected (v${d.version})`))
-      .catch(() => setServer('not reachable'))
-  }, [])
+  const [page, id] = useRoute()
+  const [creating, setCreating] = useState(false)
+  const entityId = page === 'entity' ? id : undefined
 
   return (
-    <main className="empty">
-      <h1>PharmaGraph</h1>
-      <p className="muted">The knowledge base is empty. Milestone M0: project setup.</p>
-      <p className="muted">Thai text check: พาราเซตามอล</p>
-      <p className="status">Server: {server}</p>
-    </main>
+    <div className="layout">
+      <aside className="sidebar">
+        <div className="brand"><a href="#/">PharmaGraph</a></div>
+        <button className="primary wide" onClick={() => setCreating(true)}>+ New entity</button>
+        <EntityList currentId={entityId} />
+      </aside>
+      <main className="main">
+        {entityId
+          ? <EntityPage key={entityId} id={entityId} />
+          : <div className="empty"><p className="muted">Select an entity on the left, or create a new one.</p></div>}
+      </main>
+      {creating && <EntityForm onClose={() => setCreating(false)} />}
+    </div>
   )
 }

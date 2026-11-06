@@ -3,14 +3,18 @@
 :root {
   --bg: #16181d;
   --surface: #1e2128;
+  --surface-2: #252932;
   --border: #2c313a;
   --text: #d7dae0;
   --text-muted: #8b919c;
   --accent-blue: #6b8fbf;
   --accent-violet: #8f7fc0;
   --accent-green: #6fa58a;
+  --accent-amber: #b99a5f;
+  --accent-red: #b97272;
 
   --font: 'Inter', 'Noto Sans Thai', system-ui, sans-serif;
+  --radius: 4px;
   color-scheme: dark;
 }
 
@@ -25,23 +29,146 @@ body {
   line-height: 1.5;
 }
 
-h1 { font-weight: 600; margin: 0 0 0.5rem; }
+a { color: var(--accent-blue); text-decoration: none; }
+a:hover { text-decoration: underline; }
+h1 { font-weight: 600; font-size: 1.6rem; margin: 0 0 0.25rem; }
+h2 { font-weight: 600; font-size: 1rem; margin: 0 0 0.5rem; color: var(--text); }
+:focus-visible { outline: 2px solid var(--accent-blue); outline-offset: 1px; }
 
-.muted { color: var(--text-muted); margin: 0.25rem 0; }
+.muted { color: var(--text-muted); }
+.hint { color: var(--text-muted); font-weight: normal; }
+.error { color: var(--accent-red); margin: 0.25rem 0; }
 
-.empty {
-  min-height: 100vh;
+/* ---------- Controls ---------- */
+button {
+  font: inherit;
+  color: var(--text);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.3rem 0.75rem;
+  cursor: pointer;
+}
+button:hover { border-color: var(--text-muted); }
+button:disabled { opacity: 0.5; cursor: default; }
+button.primary { background: var(--accent-blue); border-color: var(--accent-blue); color: #0f1115; font-weight: 600; }
+button.wide { width: 100%; }
+button.link { background: none; border: none; padding: 0; color: var(--accent-blue); }
+
+input, select, textarea {
+  font: inherit;
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.35rem 0.5rem;
+  width: 100%;
+}
+textarea { resize: vertical; }
+input[type='checkbox'] { width: auto; }
+
+/* ---------- Layout ---------- */
+.layout { display: grid; grid-template-columns: 280px 1fr; min-height: 100vh; }
+.sidebar {
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  padding: 0.75rem;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
+  gap: 0.75rem;
+  height: 100vh;
+  position: sticky;
+  top: 0;
+  overflow-y: auto;
+}
+.brand a { color: var(--text); font-weight: 600; font-size: 1.1rem; }
+.main { padding: 1.5rem 2rem; max-width: 960px; }
+.empty { min-height: 60vh; display: flex; align-items: center; justify-content: center; }
+@media (max-width: 800px) {
+  .layout { grid-template-columns: 1fr; }
+  .sidebar { position: static; height: auto; }
+  .main { padding: 1rem; }
 }
 
-.status {
-  margin-top: 1.5rem;
-  padding: 0.4rem 0.8rem;
-  border: 1px solid var(--border);
-  border-left: 3px solid var(--accent-green);
-  background: var(--surface);
-  border-radius: 4px;
+/* ---------- Sidebar entity list ---------- */
+.entity-list { display: flex; flex-direction: column; gap: 0.4rem; }
+.entity-list ul { list-style: none; margin: 0; padding: 0; }
+.entity-list li a { display: block; padding: 0.2rem 0.4rem; border-radius: var(--radius); color: var(--text); }
+.entity-list li a:hover { background: var(--surface-2); text-decoration: none; }
+.entity-list li a.current { background: var(--surface-2); border-left: 2px solid var(--accent-blue); }
+.entity-list li a.archived { color: var(--text-muted); font-style: italic; }
+.check { display: flex; gap: 0.4rem; align-items: center; color: var(--text-muted); }
+
+/* ---------- Entity page ---------- */
+.entity-page header { margin-bottom: 1.5rem; }
+.entity-page section { margin-bottom: 1.75rem; }
+.actions { display: flex; gap: 0.5rem; margin-top: 0.75rem; flex-wrap: wrap; }
+.archived-banner {
+  background: var(--surface-2);
+  border-left: 3px solid var(--accent-amber);
+  padding: 0.5rem 0.75rem;
+  margin-bottom: 1rem;
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  justify-content: space-between;
 }
+
+.badge {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.1rem 0.45rem;
+  border-radius: 999px;
+  border: 1px solid currentColor;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+.status-proposed { color: var(--accent-blue); }
+.status-verified { color: var(--accent-green); }
+.status-lecture_specific { color: var(--accent-violet); }
+.status-needs_review { color: var(--accent-amber); }
+.status-outdated { color: var(--text-muted); }
+.status-disputed { color: var(--accent-red); }
+
+.chips { list-style: none; display: flex; flex-wrap: wrap; gap: 0.35rem; padding: 0; margin: 0.5rem 0; }
+.chip {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0.05rem 0.6rem;
+  display: inline-flex;
+  gap: 0.35rem;
+  align-items: center;
+}
+.chip button { background: none; border: none; padding: 0; color: var(--text-muted); }
+.chip button:hover { color: var(--accent-red); }
+
+.inline-form { display: flex; gap: 0.4rem; flex-wrap: wrap; margin-top: 0.5rem; }
+.inline-form input { flex: 1 1 12rem; width: auto; }
+.inline-form select { width: auto; }
+
+/* ---------- History ---------- */
+.history { list-style: none; padding: 0; margin: 0; }
+.history li { border-left: 2px solid var(--border); padding: 0.2rem 0 0.2rem 0.75rem; }
+.history summary { cursor: pointer; color: var(--text-muted); }
+.history summary strong { color: var(--text); }
+.snapshot { margin: 0.4rem 0; display: grid; gap: 0.2rem; }
+.snapshot div { display: grid; grid-template-columns: 9rem 1fr; gap: 0.5rem; }
+.snapshot dt { color: var(--text-muted); }
+.snapshot dd { margin: 0; white-space: pre-wrap; }
+
+/* ---------- Dialogs and forms ---------- */
+.dialog {
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  width: min(560px, calc(100vw - 2rem));
+  padding: 1.25rem;
+}
+.dialog::backdrop { background: rgb(0 0 0 / 0.6); }
+.form { display: flex; flex-direction: column; gap: 0.75rem; }
+.form label { display: flex; flex-direction: column; gap: 0.25rem; font-weight: 600; }
+.form .actions { justify-content: flex-end; }
+.warning { background: var(--surface-2); border-left: 3px solid var(--accent-amber); padding: 0.5rem 0.75rem; }
+.warning p, .warning ul { margin: 0 0 0.5rem; }

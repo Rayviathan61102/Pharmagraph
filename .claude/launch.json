@@ -5,6 +5,7 @@
       "name": "pharmagraph",
       "runtimeExecutable": ".venv/Scripts/python.exe",
       "runtimeArgs": ["-m", "server"],
+      "env": { "PHARMAGRAPH_DATA": "dev-data" },
       "port": 8000
     }
   ]
