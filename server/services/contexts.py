@@ -38,6 +38,23 @@ def add(conn, table: str, owner_id: str, **context) -> None:
     history.bump(conn, table, owner_id, "update", f"Added condition: {described}")
 
 
+def replace(conn, table: str, owner_id: str, kinds: list[str], new: list[dict], reason: str | None = None) -> None:
+    """Swap all conditions of the given kinds for `new` as ONE change (one new version, not one per row).
+    Used when editing e.g. a metabolite's activity, enzyme, pathway and share together."""
+    if not kinds:
+        raise Invalid("Say which kinds of condition are being replaced.")
+    stray = {c["context_kind_id"] for c in new} - set(kinds)
+    if stray:
+        raise Invalid(f"Conditions of kind {', '.join(sorted(stray))} are not part of this change.")
+    history.require_active(history.get_row(conn, table, owner_id), table)
+    marks = ", ".join("?" * len(kinds))
+    conn.execute(f"DELETE FROM claim_context WHERE {OWNER_COLUMN[table]} = ? AND context_kind_id IN ({marks})",
+                 (owner_id, *kinds))
+    for c in new:
+        insert(conn, table, owner_id, **c)
+    history.bump(conn, table, owner_id, "update", reason or "Updated conditions")
+
+
 def remove(conn, table: str, owner_id: str, context_id: str) -> None:
     """Conditions can be removed: the previous revision's snapshot still holds them."""
     history.require_active(history.get_row(conn, table, owner_id), table)

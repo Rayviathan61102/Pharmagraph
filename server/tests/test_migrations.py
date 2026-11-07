@@ -35,7 +35,7 @@ def test_foreign_keys_are_on_and_clean(conn):
 def test_default_reference_data_is_present(conn):
     count = lambda table: conn.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0]
     assert count("verification_status") == 6
-    assert count("relationship_type") == 16
+    assert count("relationship_type") >= 16  # later migrations may add more
     assert conn.execute("SELECT inverse_label FROM relationship_type WHERE id = 'TREATS'").fetchone()[0] == "treated by"
 
 

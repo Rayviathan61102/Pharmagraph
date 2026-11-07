@@ -47,3 +47,64 @@ Short record of decisions and of any place where the code differs from
   unverified Dosage / Contraindications / Interactions entries show a caution.
 - **Known limitation:** reasons for archive and edits use the browser's simple prompt/fields; changes
   made outside the app (e.g. through /docs) appear after a page reload.
+
+## M9 — Backup and restore
+
+- Backup = zip with `pharmagraph.db` (made with SQLite's backup API) + `manifest.json` (kind, time,
+  schema version, database id, row counts per table, SHA-256). Written as `.partial` then renamed, so a
+  half-written backup never looks real. Every new backup is validated immediately.
+- Restore: validate → automatic `pre-restore` backup → upgrade the temporary copy if it is older →
+  copy it INTO the live database with the backup API (no file swapping, works while the file is open).
+- Backups from a newer app version are refused. Backup names are checked against a strict pattern
+  (no paths), so requests cannot reach other files.
+- Startup makes a `pre-migration` backup whenever an existing database needs upgrading.
+- Reminder: shown when the knowledge base has data and the newest backup is 30+ days old (or none).
+  A true background schedule needs desktop packaging (analysis T3).
+- shortcut: documents/images (`files/` folder) are not in backups yet because they do not exist until
+  Stage 2; add them to `create_backup` then.
+- Uploading a backup through the interface is not built; copy the zip into the backups folder instead.
+
+## Chemical structures and metabolites (requested 2026-11-07, ahead of Stage 2/4)
+
+- **Format: SMILES**, drawn and checked in the browser with **RDKit.js** (BSD, WebAssembly, bundled so it
+  works offline, loaded only when a structure is shown). RDKit computes canonical SMILES, formula (from its
+  atom list) and molecular weight; the toolkit version is stored with them (analysis T2). Server-side
+  Python RDKit was not used: it has no Python 3.15 build yet, and the browser needs RDKit for drawing anyway.
+- Under **Chemical properties** there are now two subheaders: **Chemical structure** and **Metabolites**.
+  Double-click a structure (or "Open details") to open `#/structure/<id>`.
+- **Highlights** (`structure_annotation`): a set of atom numbers + explanation + glow colour + status.
+  Atoms are picked by clicking the drawing or by a SMARTS pattern (e.g. `C#C`). Atom numbers refer to the
+  structure's entered SMILES, which is therefore never edited: a new SMILES = a new structure.
+  Editing a highlight creates a new version (`replaces_id`) and archives the old one; "Earlier versions"
+  shows them all. Highlights carry a status so speculation is not shown as established SAR (spec 6.2).
+- Glows are hidden by default. A feature glows (with its note and leader line) while the mouse points at
+  one of its atoms or bonds, or while it is pinned by clicking its text in the feature list (click again to
+  unpin). The highlight being edited always glows. The same hover works on the small drawing on the entity page.
+- The glow is drawn by the app (blurred shapes under RDKit's drawing) and the leader line runs from the
+  centre of the highlighted atoms straight out past the molecule. Atom positions are read from the class
+  names RDKit puts on its SVG (`bond-N atom-A atom-B`, `atom-N`).
+  shortcut: the dark-theme recolouring swaps RDKit's fixed colours in the SVG text (see `chem.ts`).
+  Overlapping notes are not pushed apart yet; with many highlights on one side, labels can collide.
+- **Metabolites** reuse relationships: `drug —HAS_METABOLITE→ metabolite` with conditions
+  `metabolite_activity` (active, inactive, hepatotoxic, neurotoxic …, several allowed), `formed_by`
+  (an enzyme entity) and `metabolic_pathway`. So they get history, sources, statuses and graph display for
+  free, and the metabolite's own page shows "metabolite of …". New entity type `metabolite`.
+- Metabolite **share** (migration 005): condition `metabolite_share`, holding "Major"/"Minor" and/or a
+  percentage such as "55%". Metabolites can be **edited** (one PUT replaces the activity, enzyme, pathway
+  and share conditions as a single new version; other conditions on the link are kept) and **removed**
+  (archived). Metabolites tagged *inactive* are hidden unless "Show inactive metabolites" is ticked.
+- Not done: attaching a *source* to a structure or to a highlight (sources currently attach to entries and
+  relationships only); 3D structures.
+
+## M10 — Graph (one panel)
+
+- Server: `POST /api/graph/expand` (up to 25 neighbours not already on screen, plus how many remain;
+  verified links first) and `POST /api/graph/view` (links among visible nodes + hidden-neighbour counts).
+  At most 500 nodes per request; the interface warns above 300.
+- No automatic layout: new neighbours are placed in a ring (or an outward arc) around the expanded
+  node, and nothing already on screen moves. Dragged nodes stay where you put them.
+- Collapse removes what that node's expansion added (recursively), never the focus.
+- Back/Forward step through earlier focus entities; the view around them is rebuilt fresh.
+- Filters: one relationship type (or all) and the three scopes. Changing a filter rebuilds the view.
+- The graph page address (`#/graph/<id>`) keeps the first focus; refocusing inside the panel does not
+  change the address yet (M11 will keep per-panel state).

@@ -45,6 +45,7 @@ export function EntityPage({ id }: { id: string }) {
   })
   useEffect(() => {
     document.title = entity ? `${entity.name} · PharmaGraph` : 'PharmaGraph'
+    return () => { document.title = 'PharmaGraph' }
   }, [entity?.name])
   if (error) return <p className="error">{String(error)}</p>
   if (!entity) return null
@@ -83,6 +84,7 @@ export function EntityPage({ id }: { id: string }) {
         <EntityCategories entityId={id} readOnly={archived} />
         {!archived && (
           <div className="actions">
+            <a className="button-link" href={`#/graph/${id}`}>Open in graph</a>
             <button onClick={() => setEditing(true)}>Edit</button>
             <button onClick={archive}>Archive</button>
           </div>

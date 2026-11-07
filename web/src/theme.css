@@ -54,6 +54,14 @@ button:disabled { opacity: 0.5; cursor: default; }
 button.primary { background: var(--accent-blue); border-color: var(--accent-blue); color: #0f1115; font-weight: 600; }
 button.wide { width: 100%; }
 button.link { background: none; border: none; padding: 0; color: var(--accent-blue); }
+a.button-link {
+  color: var(--text);
+  background: var(--surface-2);
+  border: 1px solid var(--accent-blue);
+  border-radius: var(--radius);
+  padding: 0.3rem 0.75rem;
+}
+a.button-link:hover { text-decoration: none; background: var(--border); }
 
 input, select, textarea {
   font: inherit;
@@ -308,6 +316,112 @@ a.archived { color: var(--text-muted); font-style: italic; }
 .sources-summary { padding-left: 1.2rem; margin: 0; }
 .sources-summary li { margin-bottom: 0.3rem; }
 .knowledge-section, .page-history { scroll-margin-top: 3rem; }
+
+/* ---------- Backups (M9) ---------- */
+.sidebar-footer { margin-top: auto; border-top: 1px solid var(--border); padding-top: 0.5rem; }
+.sidebar-footer a { color: var(--text-muted); }
+.sidebar-footer a.current { color: var(--text); }
+.reminder {
+  background: var(--surface-2);
+  border-left: 3px solid var(--accent-amber);
+  padding: 0.5rem 0.75rem;
+  margin-bottom: 1rem;
+}
+.ok { color: var(--accent-green); }
+.ok-box { background: var(--surface-2); border-left: 3px solid var(--accent-green); padding: 0.5rem 0.75rem; }
+.table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+.table th, .table td { text-align: left; padding: 0.4rem 0.5rem; border-bottom: 1px solid var(--border); }
+.table th { color: var(--text-muted); font-weight: 600; font-size: 0.8rem; }
+.row-actions { display: flex; gap: 0.5rem; align-items: center; justify-content: flex-end; }
+code { background: var(--surface-2); padding: 0.05rem 0.3rem; border-radius: var(--radius); }
+
+/* ---------- Graph panel (M10) ---------- */
+.main.wide { max-width: none; padding: 0.75rem 1rem; }
+.graph-panel { display: flex; flex-direction: column; height: calc(100vh - 1.5rem); }
+.graph-toolbar { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; font-size: 0.85rem; }
+.graph-toolbar select { width: auto; }
+.graph-toolbar .check { color: var(--scope); }
+.graph-help { font-size: 0.75rem; margin: 0.3rem 0; }
+.graph-stage { position: relative; flex: 1; min-height: 300px; }
+.graph-canvas {
+  position: absolute;
+  inset: 0;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+.graph-menu {
+  position: absolute;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  min-width: 10rem;
+  box-shadow: 0 4px 16px rgb(0 0 0 / 0.4);
+}
+.graph-menu button, .graph-menu a { text-align: left; border: none; border-radius: 0; background: none; padding: 0.35rem 0.75rem; color: var(--text); }
+.graph-menu button:hover, .graph-menu a:hover { background: var(--surface-2); text-decoration: none; }
+.graph-inspector {
+  position: absolute;
+  z-index: 1;
+  top: 0.75rem;
+  right: 0.75rem;
+  width: min(280px, 45%);
+  max-height: calc(100% - 1.5rem);
+  overflow-y: auto;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.6rem 0.8rem;
+  font-size: 0.85rem;
+}
+.graph-inspector h3 { margin: 0.1rem 0 0.4rem; font-size: 1rem; }
+.graph-inspector p { margin: 0.3rem 0; }
+
+/* ---------- Chemical structures and metabolites ---------- */
+.subsection { margin: 0.5rem 0 1rem; }
+.subsection h3 { font-size: 0.9rem; margin: 0.3rem 0; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; }
+.structures { display: flex; flex-wrap: wrap; gap: 0.75rem; }
+.structure-card { margin: 0; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 0.4rem; }
+.structure-card svg { width: 360px; max-width: 100%; height: auto; cursor: zoom-in; }
+.structure-card figcaption { font-size: 0.8rem; color: var(--text-muted); padding: 0.2rem 0.3rem; }
+.structure-preview svg { width: 100%; max-width: 320px; height: auto; background: var(--bg); border-radius: var(--radius); }
+.structure-loading { padding: 1rem; }
+svg.structure { display: block; }
+svg.structure.picking { cursor: crosshair; }
+.structure-layout { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 1rem; align-items: start; }
+@media (max-width: 1000px) { .structure-layout { grid-template-columns: 1fr; } }
+.structure-stage { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 0.5rem; }
+.structure-stage svg { width: 100%; height: auto; max-height: 75vh; }
+.structure-notes ul { list-style: none; padding: 0; margin: 0; }
+.structure-note-item { border-left: 4px solid; background: var(--surface); padding: 0.4rem 0.7rem; margin-bottom: 0.5rem; border-radius: var(--radius); }
+.note-toggle {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  padding: 0 0 0.3rem;
+  color: var(--text);
+}
+.structure-note-item.pinned { box-shadow: 0 0 10px -2px var(--glow); background: var(--surface-2); }
+.structure-note-item.pinned .note-toggle { color: var(--glow); }
+.note-form { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 0.75rem; margin-top: 0.5rem; }
+.note-form h3 { margin: 0; font-size: 0.95rem; }
+.swatches { display: flex; gap: 0.4rem; }
+.swatch { width: 1.6rem; height: 1.6rem; border-radius: 50%; border: 2px solid transparent; padding: 0; }
+.swatch.chosen { border-color: var(--text); }
+.structure-info { margin-top: 1rem; font-size: 0.85rem; }
+code.smiles { word-break: break-all; }
+.activity-choices { display: flex; flex-wrap: wrap; gap: 0.3rem 0.9rem; margin-bottom: 0.4rem; }
+.activity { display: inline-block; font-size: 0.75rem; padding: 0 0.45rem; margin: 0 0.25rem 0.15rem 0; border-radius: 999px; border: 1px solid currentColor; }
+.metabolites tr.inactive-row td { color: var(--text-muted); }
+.act-active { color: var(--accent-green); }
+.act-inactive { color: var(--text-muted); }
+.act-toxic { color: var(--accent-red); }
+.act-reactive { color: var(--accent-amber); }
 
 /* ---------- History ---------- */
 .history { list-style: none; padding: 0; margin: 0; }

@@ -28,6 +28,28 @@ def migration_files(folder: Path = MIGRATIONS_DIR) -> list[tuple[int, Path]]:
     return files
 
 
+def schema_version(conn) -> int:
+    """The highest migration number applied to this database (0 for an empty file)."""
+    if not conn.execute("SELECT 1 FROM sqlite_master WHERE name = 'schema_migration'").fetchone():
+        return 0
+    return conn.execute("SELECT coalesce(max(version), 0) FROM schema_migration").fetchone()[0]
+
+
+def latest_version(folder: Path = MIGRATIONS_DIR) -> int:
+    return max((v for v, _ in migration_files(folder)), default=0)
+
+
+def has_pending(db_path: Path, folder: Path = MIGRATIONS_DIR) -> bool:
+    """True when an existing database is older than this version of the app."""
+    if not db_path.exists():
+        return False
+    conn = connect(db_path)
+    try:
+        return schema_version(conn) < latest_version(folder)
+    finally:
+        conn.close()
+
+
 def migrate(db_path: Path, folder: Path = MIGRATIONS_DIR) -> list[str]:
     """Apply pending migrations. Returns the names of the files applied (empty when already up to date)."""
     db_path.parent.mkdir(parents=True, exist_ok=True)

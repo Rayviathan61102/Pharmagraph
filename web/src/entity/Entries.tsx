@@ -5,6 +5,7 @@ import Markdown from 'react-markdown'
 import { api, useLookups, useSave, type Entity, type Entry, type Lookups, type Section } from '../api'
 import { History } from '../History'
 import { ErrorText, askReason } from '../ui'
+import { ChemistrySection } from '../chem/ChemistrySection'
 import { Conditions } from './Conditions'
 import { EntryForm } from './EntryForm'
 import { Evidence } from './Evidence'
@@ -96,7 +97,9 @@ export function Entries({ entity, showArchived }: { entity: Entity; showArchived
               <h2>{section.label}</h2>
               {!readOnly && <button className="link" onClick={() => setAddingTo(section.id)}>+ Add</button>}
             </div>
-            {inSection.length === 0 && <p className="muted">Nothing recorded yet.</p>}
+            {section.id === 'chemistry' && <ChemistrySection entity={entity} readOnly={readOnly} />}
+            {section.id === 'chemistry' && inSection.length > 0 && <h3 className="subhead">Notes</h3>}
+            {inSection.length === 0 && section.id !== 'chemistry' && <p className="muted">Nothing recorded yet.</p>}
             {inSection.map((e) => <EntryCard key={e.id} entry={e} readOnly={readOnly} />)}
           </section>
         )

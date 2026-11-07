@@ -86,6 +86,20 @@ def add_context(owner: Owner, owner_id: str, body: ContextIn, conn: Conn):
     return {"ok": True}
 
 
+class ContextsReplace(BaseModel):
+    kinds: list[str]           # every condition of these kinds is replaced ...
+    contexts: list[ContextIn]  # ... by these
+    reason: str | None = None
+
+
+@router.put("/{owner}/{owner_id}/contexts")
+def replace_contexts(owner: Owner, owner_id: str, body: ContextsReplace, conn: Conn):
+    with transaction(conn):
+        contexts.replace(conn, OWNER_TABLE[owner], owner_id, body.kinds,
+                         [c.model_dump() for c in body.contexts], body.reason)
+    return {"ok": True}
+
+
 @router.post("/{owner}/{owner_id}/contexts/{context_id}/remove")
 def remove_context(owner: Owner, owner_id: str, context_id: str, conn: Conn):
     with transaction(conn):
