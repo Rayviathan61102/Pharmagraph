@@ -239,7 +239,7 @@ function Metabolites({ entity, readOnly }: { entity: Entity; readOnly: boolean }
         </label>
       )}
       {metabolites.length === 0 ? <p className="muted">{all.length ? 'Only inactive metabolites are recorded.' : 'No metabolites recorded yet.'}</p> : (
-        <table className="table metabolites">
+        <div className="table-scroll"><table className="table metabolites">
           <thead>
             <tr><th>Metabolite</th><th>Share</th><th>Activity / toxicity</th><th>Formed by</th><th>Pathway</th><th>Status</th><th /></tr>
           </thead>
@@ -266,7 +266,7 @@ function Metabolites({ entity, readOnly }: { entity: Entity; readOnly: boolean }
               )
             })}
           </tbody>
-        </table>
+        </table></div>
       )}
       <ErrorText error={save.error} />
       <p className="hint">Sources and full history for each metabolite are under “Related concepts”.</p>

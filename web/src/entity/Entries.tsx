@@ -6,6 +6,7 @@ import { api, useLookups, useSave, type Entity, type Entry, type Lookups, type S
 import { History } from '../History'
 import { ErrorText, askReason } from '../ui'
 import { ChemistrySection } from '../chem/ChemistrySection'
+import { EntryNotes } from '../notes/Notes'
 import { Conditions } from './Conditions'
 import { EntryForm } from './EntryForm'
 import { Evidence } from './Evidence'
@@ -49,6 +50,7 @@ function EntryCard({ entry, readOnly }: { entry: Entry; readOnly: boolean }) {
       <div className="markdown"><Markdown>{entry.body}</Markdown></div>
       <Conditions owner="entries" ownerId={entry.id} conditions={entry.contexts} readOnly={readOnly || archived} />
       <Evidence owner="entries" ownerId={entry.id} evidence={entry.evidence} readOnly={readOnly || archived} />
+      <EntryNotes entityId={entry.entity_id} entryId={entry.id} readOnly={readOnly || archived} />
       <div className="entry-actions">
         {!readOnly && !archived && <button className="link" onClick={() => setEditing(true)}>Edit</button>}
         {!readOnly && !archived && <button className="link" onClick={archive}>Archive</button>}

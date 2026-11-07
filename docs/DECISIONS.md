@@ -96,6 +96,32 @@ Short record of decisions and of any place where the code differs from
 - Not done: attaching a *source* to a structure or to a highlight (sources currently attach to entries and
   relationships only); 3D structures.
 
+## M11 — Two-panel workspace
+
+- Each panel keeps its own history of addresses (`/entity/<id>`, `/graph/<id>` …). Every link in the app
+  is an address; when it changes, the **active** panel (last clicked or focused) shows it, and the address
+  bar always mirrors the active panel. So existing links needed no changes.
+- At most two panels is built into the code (`MAX_PANELS = 2`). Layout (panels, histories, arrangement,
+  split) is saved in the browser's local storage, not in the database: it is display state, not knowledge.
+- An address opened directly (bookmark, new tab) goes into the active panel, overriding the saved view.
+- Divider: drag, or focus it and use the arrow keys (25–75%). Narrow windows (≤ 900 px) show tabs.
+- The graph re-measures itself when its panel is resized. Wide tables scroll inside their own box.
+- Not done (optional in the spec): highlighting concepts that are visible in both graph panels.
+
+## M12 — Personal notes
+
+- `user_note` (in the schema since M1): attached to at most one entity, knowledge entry, relationship or
+  source, or to nothing (the inbox). Stages inbox → draft → connected → reviewed → verified.
+- Notes are personal, so editing a note simply updates it (no revision history), and notes are not in the
+  search index yet. Notes never touch the row they are attached to (tested).
+
+## M13 — Acceptance and speed
+
+- See [ACCEPTANCE.md](ACCEPTANCE.md). `server/tools/benchmark.py` builds a 50k-entity / 300k-relationship
+  database and times the queries; all are well under the targets.
+- Backup copies into a temporary file with SQLite's crash protection off (the copy is fully checked
+  afterwards), which made copying ~5x faster. Restores into the live database keep full protection.
+
 ## M10 — Graph (one panel)
 
 - Server: `POST /api/graph/expand` (up to 25 neighbours not already on screen, plus how many remain;

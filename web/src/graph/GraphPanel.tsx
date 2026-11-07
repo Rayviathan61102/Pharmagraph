@@ -11,6 +11,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useEffect, useReducer, useRef, useState } from 'react'
 import { api, useLookups, type Entity, type Scope } from '../api'
 import { ErrorText, StatusBadge, entityLink } from '../ui'
+import { OpenInOther, usePanel } from '../workspace/Workspace'
 
 type GNode = { id: string; name: string; entity_type_id: string; status_code: string }
 type GEdge = { id: string; source: string; target: string; label: string; is_directed: number; scope: Scope }
@@ -62,6 +63,7 @@ function Inspector({ id, hidden, onFocus, onExpand }: { id: string; hidden: numb
       {e.description && <p>{e.description}</p>}
       <div className="actions">
         <a href={entityLink(e.id)}>Open details</a>
+        <OpenInOther path={`/entity/${e.id}`} />
         <button className="link" onClick={onFocus}>Make focus</button>
         {hidden > 0 && <button className="link" onClick={onExpand}>Show {Math.min(hidden, 25)} more of {hidden}</button>}
       </div>
@@ -71,6 +73,7 @@ function Inspector({ id, hidden, onFocus, onExpand }: { id: string; hidden: numb
 
 export function GraphPanel({ initialFocus }: { initialFocus: string }) {
   const { data: lookups } = useLookups()
+  const { openInOther, panelCount } = usePanel()
   const container = useRef<HTMLDivElement>(null)
   const cyRef = useRef<Core | null>(null)
   const expandedFrom = useRef(new Map<string, string>()) // node -> the node whose expansion added it
@@ -205,8 +208,19 @@ export function GraphPanel({ initialFocus }: { initialFocus: string }) {
     })
     g.on('cxttap', 'node', (e) => setMenu({ x: e.renderedPosition.x, y: e.renderedPosition.y, id: e.target.id() }))
     g.on('tap', (e) => { if (e.target === g) { setSelected(null); setMenu(null) } })
-    run(() => focus(initialFocus, false))
-    return () => g.destroy()
+    // Cytoscape measures each label once and caches the picture. If that happens before the bundled fonts
+    // have loaded, labels are measured with a fallback font and later appear squashed or cut off.
+    const fontsReady = Promise.all(['11px Inter', '600 11px Inter', '11px "Noto Sans Thai"']
+      .map((font) => document.fonts.load(font))).catch(() => undefined)
+    run(() => fontsReady.then(() => focus(initialFocus, false)))
+    // The panel can be resized (divider, second panel, window): tell Cytoscape and refit the view.
+    const resized = new ResizeObserver(() => {
+      if (g.destroyed()) return
+      g.resize()
+      if (g.nodes().length) g.fit(undefined, 60)
+    })
+    resized.observe(container.current!)
+    return () => { resized.disconnect(); g.destroy() }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -250,6 +264,9 @@ export function GraphPanel({ initialFocus }: { initialFocus: string }) {
         {menu && (
           <div className="graph-menu" role="menu" style={{ left: menu.x, top: menu.y }}>
             <a role="menuitem" href={entityLink(menu.id)}>Open details</a>
+            <button role="menuitem" onClick={() => { setMenu(null); openInOther(`/entity/${menu.id}`) }}>
+              Details in {panelCount < 2 ? 'second' : 'other'} panel
+            </button>
             <button role="menuitem" onClick={() => run(() => focus(menu.id))}>Make focus</button>
             {hiddenOf(menu.id) > 0 && (
               <button role="menuitem" onClick={() => run(() => expand(menu.id))}>Show more ({hiddenOf(menu.id)})</button>

@@ -4,10 +4,13 @@ A local-first scientific knowledge base and learning environment for pharmaceuti
 Design and database plan: [docs/PharmaGraph-Analysis.md](docs/PharmaGraph-Analysis.md).
 Decisions and differences from the plan: [docs/DECISIONS.md](docs/DECISIONS.md).
 
-Current milestone: **M10 done** — entities, knowledge entries (general / lecture / personal / both),
-typed relationships with conditions, sources and evidence, statuses and reviews, search, category
-sidebar, full entity pages, backup and restore (M9) and the interactive graph (M10, "Open in graph").
-Every change is kept in revision history; nothing is ever deleted.
+Status: **MVP complete (M0–M13)** — all 12 criteria of spec Section 21 are met
+([docs/ACCEPTANCE.md](docs/ACCEPTANCE.md)). How to use it: **[docs/USER-GUIDE.md](docs/USER-GUIDE.md)**.
+
+Entities, knowledge entries (general / lecture / personal / both), typed relationships with conditions,
+sources and evidence, statuses and reviews, search (incl. Thai), category sidebar, entity pages, chemical
+structures with explained highlights, metabolites, the interactive graph, a two-panel workspace,
+personal notes, and backup/restore. Every change is kept in revision history; nothing is ever deleted.
 
 ## Backups
 
@@ -15,6 +18,14 @@ Open **Backups** at the bottom of the sidebar. "Back up now" makes a checked .zi
 `<data folder>\backups`. A backup is also made automatically before every restore and before the
 database structure is upgraded. You are reminded when the last backup is more than 30 days old.
 To move to another computer: copy a backup .zip into the new computer's `backups` folder and restore it.
+
+## Speed check
+
+```bash
+.venv\Scripts\python -m server.tools.benchmark
+```
+
+Builds a throw-away 50,000-entity database in a temporary folder and times the main queries.
 
 ## Layout
 

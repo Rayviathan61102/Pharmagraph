@@ -4,10 +4,12 @@ import { useEffect, useState, type FormEvent } from 'react'
 import { api, useSave, type Entity } from '../api'
 import { History } from '../History'
 import { ErrorText, askReason, formatTime } from '../ui'
+import { OpenInOther } from '../workspace/Workspace'
 import { StatusButton } from './StatusDialog'
 import { Entries } from './Entries'
 import { EntityCategories } from './EntityCategories'
 import { EntityForm } from './EntityForm'
+import { EntityNotes } from '../notes/Notes'
 import { PageNav, SourcesSummary } from './PageExtras'
 import { Relationships } from './Relationships'
 
@@ -85,6 +87,7 @@ export function EntityPage({ id }: { id: string }) {
         {!archived && (
           <div className="actions">
             <a className="button-link" href={`#/graph/${id}`}>Open in graph</a>
+            <OpenInOther path={`/graph/${id}`} what="Graph" className="" />
             <button onClick={() => setEditing(true)}>Edit</button>
             <button onClick={archive}>Archive</button>
           </div>
@@ -104,6 +107,7 @@ export function EntityPage({ id }: { id: string }) {
       <PageNav entity={entity} showArchived={showArchived} />
       <Entries entity={entity} showArchived={showArchived} />
       <Relationships entity={entity} showArchived={showArchived} />
+      <EntityNotes entityId={id} readOnly={archived} />
       <SourcesSummary entity={entity} showArchived={showArchived} />
 
       <section id="sec-history" className="page-history">

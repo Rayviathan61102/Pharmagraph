@@ -14,6 +14,7 @@ export function PageNav({ entity, showArchived }: { entity: Entity; showArchived
   const targets = [
     ...visibleSections(lookups, entity, entries).map((s) => ({ id: `sec-${s.id}`, label: s.label })),
     { id: 'sec-related', label: 'Related concepts' },
+    { id: 'sec-notes', label: 'My notes' },
     { id: 'sec-sources', label: 'Sources' },
     { id: 'sec-history', label: 'History' },
   ]

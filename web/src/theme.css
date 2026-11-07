@@ -90,12 +90,13 @@ input[type='checkbox'], input[type='radio'] { width: auto; }
   overflow-y: auto;
 }
 .brand a { color: var(--text); font-weight: 600; font-size: 1.1rem; }
-.main { padding: 1.5rem 2rem; max-width: 960px; }
+.entity-page, .backups-page, .notes-page { max-width: 960px; }
 .empty { min-height: 60vh; display: flex; align-items: center; justify-content: center; }
 @media (max-width: 800px) {
   .layout { grid-template-columns: 1fr; }
   .sidebar { position: static; height: auto; }
-  .main { padding: 1rem; }
+  .panel-body { padding: 0.75rem; }
+  .workspace-area { height: auto; min-height: 70vh; }
 }
 
 /* ---------- Sidebar entity list ---------- */
@@ -318,7 +319,7 @@ a.archived { color: var(--text-muted); font-style: italic; }
 .knowledge-section, .page-history { scroll-margin-top: 3rem; }
 
 /* ---------- Backups (M9) ---------- */
-.sidebar-footer { margin-top: auto; border-top: 1px solid var(--border); padding-top: 0.5rem; }
+.sidebar-footer { margin-top: auto; border-top: 1px solid var(--border); padding-top: 0.5rem; display: flex; gap: 1rem; }
 .sidebar-footer a { color: var(--text-muted); }
 .sidebar-footer a.current { color: var(--text); }
 .reminder {
@@ -336,8 +337,7 @@ a.archived { color: var(--text-muted); font-style: italic; }
 code { background: var(--surface-2); padding: 0.05rem 0.3rem; border-radius: var(--radius); }
 
 /* ---------- Graph panel (M10) ---------- */
-.main.wide { max-width: none; padding: 0.75rem 1rem; }
-.graph-panel { display: flex; flex-direction: column; height: calc(100vh - 1.5rem); }
+.graph-panel { display: flex; flex-direction: column; height: 100%; min-height: 420px; }
 .graph-toolbar { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; font-size: 0.85rem; }
 .graph-toolbar select { width: auto; }
 .graph-toolbar .check { color: var(--scope); }
@@ -418,10 +418,64 @@ code.smiles { word-break: break-all; }
 .activity-choices { display: flex; flex-wrap: wrap; gap: 0.3rem 0.9rem; margin-bottom: 0.4rem; }
 .activity { display: inline-block; font-size: 0.75rem; padding: 0 0.45rem; margin: 0 0.25rem 0.15rem 0; border-radius: 999px; border: 1px solid currentColor; }
 .metabolites tr.inactive-row td { color: var(--text-muted); }
+.table-scroll { overflow-x: auto; max-width: 100%; } /* wide tables scroll on their own in a narrow panel */
 .act-active { color: var(--accent-green); }
 .act-inactive { color: var(--text-muted); }
 .act-toxic { color: var(--accent-red); }
 .act-reactive { color: var(--accent-amber); }
+
+/* ---------- Two-panel workspace (M11) ---------- */
+.workspace-area { display: flex; flex-direction: column; height: 100vh; min-width: 0; padding: 0.5rem; gap: 0.4rem; }
+.workspace-area > .reminder { margin: 0; }
+.workspace-bar { display: flex; align-items: center; gap: 1rem; font-size: 0.85rem; }
+.tabs { display: flex; gap: 0.3rem; }
+.tabs button.current { border-color: var(--accent-blue); color: var(--text); }
+.workspace { flex: 1; min-height: 0; display: flex; gap: 0; }
+.workspace.side { flex-direction: row; }
+.workspace.stacked { flex-direction: column; }
+.panel {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg);
+}
+.panel.active { border-color: color-mix(in srgb, var(--accent-blue) 60%, var(--border)); }
+.panel-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.5rem;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+  font-size: 0.85rem;
+}
+.panel-bar button { padding: 0.1rem 0.5rem; }
+.panel-title { flex: 1; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.panel-body { flex: 1; min-height: 0; overflow: auto; padding: 1rem 1.25rem; position: relative; }
+.divider { flex: 0 0 6px; cursor: col-resize; background: transparent; border-radius: 3px; touch-action: none; }
+.divider.stacked { cursor: row-resize; }
+.divider:hover, .divider:focus-visible { background: var(--border); }
+.panel .page-nav { top: -1rem; } /* the panel body's padding: stick to its top edge */
+
+/* ---------- Personal notes (M12) ---------- */
+.note-card {
+  --scope: var(--accent-green);
+  border-left: 4px dotted var(--accent-green);
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 0.4rem 0.8rem;
+  margin: 0.4rem 0;
+  font-size: 0.9rem;
+}
+.note-card.archived { opacity: 0.6; }
+.note-card select { width: auto; font-size: 0.75rem; padding: 0 0.3rem; }
+.note-composer textarea { margin-bottom: 0.3rem; }
+.note-composer .actions { margin-top: 0; justify-content: flex-end; }
+.notes-tabs { margin: 1rem 0 0.5rem; }
+.entry .note-card { margin-left: 0.5rem; }
 
 /* ---------- History ---------- */
 .history { list-style: none; padding: 0; margin: 0; }

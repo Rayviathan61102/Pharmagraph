@@ -38,10 +38,17 @@ def _sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
-def _copy_database(source: Path, target: Path) -> None:
-    """Copy a whole database with SQLite's backup API (consistent even while the app is writing)."""
+def _copy_database(source: Path, target: Path, scratch: bool = False) -> None:
+    """Copy a whole database with SQLite's backup API (consistent even while the app is writing).
+
+    scratch=True: the target is a temporary file that is checked afterwards, so SQLite's crash protection
+    on it is switched off (about 5x faster). Never use it for the live database.
+    """
     src, dst = connect(source), sqlite3.connect(target)
     try:
+        if scratch:
+            dst.execute("PRAGMA journal_mode = OFF")
+            dst.execute("PRAGMA synchronous = OFF")
         src.backup(dst)
     finally:
         src.close()
@@ -87,7 +94,7 @@ def create_backup(kind: str = "manual") -> dict:
 
     with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
         copy = Path(tmp) / "pharmagraph.db"
-        _copy_database(db, copy)
+        _copy_database(db, copy, scratch=True)
         conn = connect(copy)
         try:
             manifest = {
@@ -104,7 +111,7 @@ def create_backup(kind: str = "manual") -> dict:
         manifest["files"] = {"pharmagraph.db": _sha256(copy)}
         # shortcut: documents and images (files/ folder) do not exist until Stage 2; add them here then.
         partial = folder / (name + ".partial")
-        with zipfile.ZipFile(partial, "w", zipfile.ZIP_DEFLATED) as z:
+        with zipfile.ZipFile(partial, "w", zipfile.ZIP_DEFLATED, compresslevel=1) as z:  # fast; size barely differs
             z.write(copy, "pharmagraph.db")
             z.writestr("manifest.json", json.dumps(manifest, indent=2, ensure_ascii=False))
         partial.replace(folder / name)  # only a completely written zip ever gets its real name

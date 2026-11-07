@@ -8,7 +8,7 @@ from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from . import config
-from .routes import (backups, categories, entities, entries, graph, history, lookups, relationships, search,
+from .routes import (backups, categories, entities, entries, graph, history, lookups, notes, relationships, search,
                      sources, structures)
 from .services import backup
 from .services.errors import Conflict, Invalid, NotFound
@@ -25,7 +25,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="PharmaGraph", version=config.APP_VERSION, lifespan=lifespan)
 # history goes last: its general "/api/{kind}/{id}/archive" pattern must not catch e.g. /api/sources/{id}/archive.
-for module in (lookups, backups, search, graph, categories, structures, entities, entries, relationships, sources,
+for module in (lookups, backups, search, graph, categories, structures, notes, entities, entries, relationships, sources,
                history):
     app.include_router(module.router)
 
