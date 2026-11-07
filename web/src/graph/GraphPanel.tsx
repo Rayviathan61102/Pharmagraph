@@ -32,15 +32,28 @@ const COLOR_GROUPS: [string, string[]][] = [
   ['#5fa3a3', ['dosage_form', 'formulation', 'excipient', 'manufacturing_process', 'equipment', 'analytical_technique']],
 ]
 const colorOf = (type: string) => COLOR_GROUPS.find(([, types]) => types.includes(type))?.[0] ?? '#8b919c'
-const nodeData = (n: GNode) => ({ id: n.id, name: n.name, label: n.name, type: n.entity_type_id, color: colorOf(n.entity_type_id) })
+const nodeData = (n: GNode) => ({
+  id: n.id, name: n.name, label: n.name, type: n.entity_type_id, color: colorOf(n.entity_type_id), badge: 'none',
+})
+
+// The number of hidden neighbours is drawn INSIDE the node as a small image, so the label text never changes
+// after a node appears (Cytoscape caches label pictures; changing a label could leave it cropped).
+const badge = (hidden: number) => {
+  if (hidden === 0) return 'none'
+  const text = hidden > 99 ? '99+' : `+${hidden}`
+  return 'data:image/svg+xml;utf8,' + encodeURIComponent(
+    `<svg xmlns='http://www.w3.org/2000/svg' width='48' height='48'><text x='24' y='31' font-size='${text.length > 2 ? 17 : 21}' ` +
+    `font-family='Segoe UI, Arial, sans-serif' font-weight='700' text-anchor='middle' fill='#0f1115'>${text}</text></svg>`)
+}
 
 const STYLE: cytoscape.StylesheetJson = [
   { selector: 'node', style: {
-    'background-color': 'data(color)', label: 'data(label)', color: '#d7dae0', 'font-size': 11,
+    'background-color': 'data(color)', 'background-image': 'data(badge)', 'background-fit': 'contain',
+    label: 'data(label)', color: '#d7dae0', 'font-size': 11, 'line-height': 1.25,
     'font-family': 'Inter, Noto Sans Thai, sans-serif', 'text-valign': 'bottom', 'text-margin-y': 4,
-    'text-wrap': 'wrap', 'text-max-width': '130px', width: 18, height: 18,
+    'text-wrap': 'wrap', 'text-max-width': '130px', width: 22, height: 22,
     'text-background-color': '#16181d', 'text-background-opacity': 0.7, 'text-background-padding': '1px' } },
-  { selector: 'node[?focus]', style: { width: 30, height: 30, 'border-width': 2, 'border-color': '#d7dae0', 'font-weight': 600 } },
+  { selector: 'node[?focus]', style: { width: 32, height: 32, 'border-width': 2, 'border-color': '#d7dae0', 'font-weight': 600 } },
   { selector: 'node:selected', style: { 'border-width': 3, 'border-color': '#e8ebf0' } },
   { selector: 'edge', style: {
     width: 1.2, 'line-color': '#4a515e', 'target-arrow-color': '#4a515e', 'target-arrow-shape': 'triangle',
@@ -106,7 +119,7 @@ export function GraphPanel({ initialFocus }: { initialFocus: string }) {
     })))
     g.nodes().forEach((n) => {
       const hidden = view.hidden[n.id()] ?? 0
-      n.data({ hidden, label: hidden ? `${n.data('name')}\n+${hidden}` : n.data('name') })
+      n.data({ hidden, badge: badge(hidden) }) // the label itself never changes
     })
     refresh()
   }
@@ -195,7 +208,7 @@ export function GraphPanel({ initialFocus }: { initialFocus: string }) {
 
   // Create the graph once; event handlers read the latest state through refs.
   useEffect(() => {
-    const g = cytoscape({ container: container.current, style: STYLE, minZoom: 0.15, maxZoom: 3 })
+    const g = cytoscape({ container: container.current, style: STYLE, minZoom: 0.15, maxZoom: 3, })
     cyRef.current = g
     g.on('tap', 'node', (e) => {
       const id = e.target.id()
@@ -256,7 +269,7 @@ export function GraphPanel({ initialFocus }: { initialFocus: string }) {
         {count > WARN_AT && <span className="caution">Many items on screen. Collapse some or use filters.</span>}
       </div>
       <p className="graph-help muted">
-        Click: select · Double-click: expand / collapse · Alt+click: focus · Right-click: menu · Drag: move
+        Number in a node = hidden neighbours · Click: select · Double-click: expand / collapse · Alt+click: focus · Right-click: menu
       </p>
       <ErrorText error={error} />
       <div className="graph-stage">

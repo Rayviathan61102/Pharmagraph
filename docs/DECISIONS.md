@@ -129,6 +129,10 @@ Short record of decisions and of any place where the code differs from
   At most 500 nodes per request; the interface warns above 300.
 - No automatic layout: new neighbours are placed in a ring (or an outward arc) around the expanded
   node, and nothing already on screen moves. Dragged nodes stay where you put them.
+- Hidden-neighbour counts ("+23") are drawn inside the node as a small image, not in the label. Labels
+  are set once (the name) and never change afterwards: changing a label's text after Cytoscape had cached
+  its picture sometimes left labels cropped (seen on the user's screen, not reproducible here). The graph
+  also waits for the bundled fonts before drawing labels.
 - Collapse removes what that node's expansion added (recursively), never the focus.
 - Back/Forward step through earlier focus entities; the view around them is rebuilt fresh.
 - Filters: one relationship type (or all) and the three scopes. Changing a filter rebuilds the view.
