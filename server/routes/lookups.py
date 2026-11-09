@@ -14,6 +14,6 @@ def lookups(conn: Conn):
         "entity_types": rows(conn, "SELECT * FROM entity_type WHERE archived_at IS NULL ORDER BY label"),
         "relationship_types": rows(conn, "SELECT * FROM relationship_type WHERE archived_at IS NULL ORDER BY label"),
         "sections": rows(conn, "SELECT * FROM knowledge_section WHERE archived_at IS NULL ORDER BY sort_order"),
-        "type_sections": rows(conn, "SELECT * FROM entity_type_section"),
+        "type_sections": rows(conn, "SELECT * FROM entity_type_section ORDER BY sort_order"),
         "context_kinds": rows(conn, "SELECT * FROM context_kind ORDER BY label"),
     }

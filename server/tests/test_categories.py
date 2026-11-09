@@ -60,6 +60,22 @@ def test_archived_category_disappears_from_tree(client, tree):
     assert client.post("/api/categories", json={"name": "x", "parent_id": tree["micro"]}).status_code == 400
 
 
+def test_deleting_a_category_takes_its_subfolders_but_keeps_entities(client, tree):
+    azt = client.post("/api/entities", json={"entity_type_id": "drug", "name": "Zidovudine"}).json()["id"]
+    client.post(f"/api/categories/{tree['hiv']}/entities", json={"entity_id": azt})
+    client.post(f"/api/categories/{tree['micro']}/entities", json={"entity_id": azt})
+    client.post(f"/api/categories/{tree['hiv']}/archive")  # deleted earlier, on its own
+    client.post(f"/api/categories/{tree['antimicrobials']}/archive")
+    paths = [c["path"] for c in client.get("/api/categories").json()]
+    assert paths == ["Microbiology", "Pharmacology"]  # no orphaned subfolders left behind
+    assert client.get(f"/api/entities/{azt}").json()["archived_at"] is None
+    assert [c["path"] for c in client.get(f"/api/entities/{azt}/categories").json()] == ["Microbiology"]
+    client.post(f"/api/categories/{tree['antimicrobials']}/unarchive")
+    paths = [c["path"] for c in client.get("/api/categories").json()]
+    assert "Pharmacology › Antimicrobials › Antivirals" in paths
+    assert not any("HIV" in p for p in paths)  # it was deleted separately, so it stays deleted
+
+
 def test_remove_entity_from_category(client, tree):
     azt = client.post("/api/entities", json={"entity_type_id": "drug", "name": "Zidovudine"}).json()["id"]
     client.post(f"/api/categories/{tree['hiv']}/entities", json={"entity_id": azt})

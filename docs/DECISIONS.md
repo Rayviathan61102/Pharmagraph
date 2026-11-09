@@ -122,6 +122,16 @@ Short record of decisions and of any place where the code differs from
 - Backup copies into a temporary file with SQLite's crash protection off (the copy is fully checked
   afterwards), which made copying ~5x faster. Restores into the live database keep full protection.
 
+## Templates, images and comparison (requested 2026-11-09)
+
+- A **template** is an entity type's ordered topic list (`entity_type_section.sort_order`, migration 006), so
+  custom templates are new entity types and entity pages need no separate mechanism. Filled-in boxes are
+  saved with the entity in one transaction.
+- **Images** are stored in the database (`entity_image`), so backups and moving computers include them.
+  PNG/JPEG/GIF/WebP only, checked from the file's bytes; SVG is refused because it can carry scripts. 8 MB limit.
+- **Compare** is built in the browser from existing data; rows with nothing on either side are hidden.
+- Deleted categories take their subfolders with them and are archived; entities are not touched.
+
 ## M10 — Graph (one panel)
 
 - Server: `POST /api/graph/expand` (up to 25 neighbours not already on screen, plus how many remain;

@@ -60,7 +60,7 @@ export function EntryForm({ entityId, entry, sectionId, onClose }: Props) {
 
         <label>Section
           <select value={section} onChange={(e) => setSection(e.target.value)}>
-            {lookups?.sections.map((s) => <option key={s.id} value={s.id}>{s.label}</option>)}
+            {lookups?.sections.filter((s) => s.id !== 'image').map((s) => <option key={s.id} value={s.id}>{s.label}</option>)}
           </select>
         </label>
 

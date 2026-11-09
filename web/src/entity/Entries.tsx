@@ -2,12 +2,13 @@
 import { useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
 import Markdown from 'react-markdown'
-import { api, useLookups, useSave, type Entity, type Entry, type Lookups, type Section } from '../api'
+import { api, templateSections, useLookups, useSave, type Entity, type Entry, type Lookups, type Section } from '../api'
 import { History } from '../History'
 import { ErrorText, askReason } from '../ui'
 import { ChemistrySection } from '../chem/ChemistrySection'
 import { EntryNotes } from '../notes/Notes'
 import { Conditions } from './Conditions'
+import { EntityImages } from './EntityImages'
 import { EntryForm } from './EntryForm'
 import { Evidence } from './Evidence'
 import { StatusButton } from './StatusDialog'
@@ -16,7 +17,7 @@ const SCOPE_LABEL = { general: 'General', lecture: 'Lecture', personal: 'Persona
 
 // Clinical sections where unverified text gets a visible caution (spec 13: clinical and dosage claims
 // must be clearly distinguished from verified information).
-const CLINICAL_SECTIONS = new Set(['dosage', 'contraindications', 'interactions'])
+export const CLINICAL_SECTIONS = new Set(['dosage', 'contraindications', 'interactions'])
 
 function EntryCard({ entry, readOnly }: { entry: Entry; readOnly: boolean }) {
   const save = useSave()
@@ -75,11 +76,11 @@ export function useEntries(entity: Entity, showArchived: boolean) {
   })
 }
 
-/** The sections this entity type always shows, plus any section that already has entries, in spec order. */
+/** The template's topics in its own order, then any other topic that already has entries. */
 export function visibleSections(lookups: Lookups, entity: Entity, entries: Entry[]): Section[] {
-  const always = new Set(lookups.type_sections.filter((t) => t.entity_type_id === entity.entity_type_id)
-    .map((t) => t.section_id))
-  return lookups.sections.filter((s) => always.has(s.id) || entries.some((e) => e.section_id === s.id))
+  const template = templateSections(lookups, entity.entity_type_id)
+  return [...template, ...lookups.sections.filter((s) =>
+    !template.some((t) => t.id === s.id) && entries.some((e) => e.section_id === s.id))]
 }
 
 export function Entries({ entity, showArchived }: { entity: Entity; showArchived: boolean }) {
@@ -97,11 +98,12 @@ export function Entries({ entity, showArchived }: { entity: Entity; showArchived
           <section key={section.id} id={`sec-${section.id}`} className="knowledge-section">
             <div className="section-head">
               <h2>{section.label}</h2>
-              {!readOnly && <button className="link" onClick={() => setAddingTo(section.id)}>+ Add</button>}
+              {!readOnly && section.id !== 'image' && <button className="link" onClick={() => setAddingTo(section.id)}>+ Add</button>}
             </div>
+            {section.id === 'image' && <EntityImages entity={entity} readOnly={readOnly} />}
             {section.id === 'chemistry' && <ChemistrySection entity={entity} readOnly={readOnly} />}
             {section.id === 'chemistry' && inSection.length > 0 && <h3 className="subhead">Notes</h3>}
-            {inSection.length === 0 && section.id !== 'chemistry' && <p className="muted">Nothing recorded yet.</p>}
+            {inSection.length === 0 && section.id !== 'chemistry' && section.id !== 'image' && <p className="muted">Nothing recorded yet.</p>}
             {inSection.map((e) => <EntryCard key={e.id} entry={e} readOnly={readOnly} />)}
           </section>
         )

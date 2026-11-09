@@ -47,7 +47,7 @@ export function useSave() {
 // ---------- Data shapes ----------
 
 export type Status = { code: string; label: string; description: string | null }
-export type EntityType = { id: string; label: string; description: string | null }
+export type EntityType = { id: string; label: string; description: string | null; is_builtin: number }
 export type RelationshipType = {
   id: string; label: string; inverse_label: string | null; description: string | null; is_directed: number
 }
@@ -65,6 +65,16 @@ export type Lookups = {
 
 export function useLookups() {
   return useQuery({ queryKey: ['lookups'], queryFn: () => api.get<Lookups>('/lookups'), staleTime: Infinity })
+}
+
+/** The topics of an entity type's template, in the template's own order. */
+export const templateSections = (lookups: Lookups, typeId: string): Section[] =>
+  lookups.type_sections.filter((t) => t.entity_type_id === typeId)
+    .flatMap((t) => lookups.sections.filter((s) => s.id === t.section_id))
+
+export async function uploadImage(entityId: string, file: File) {
+  const response = await fetch(`/api/entities/${entityId}/images`, { method: 'POST', body: file })
+  if (!response.ok) throw new ApiError(response.status, await response.json().catch(() => null))
 }
 
 export type Alias = {

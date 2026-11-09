@@ -1,10 +1,13 @@
 """HTTP API for entities and their aliases."""
+from typing import Literal
+
 from fastapi import APIRouter
 from pydantic import BaseModel
 
 from ..db.connection import transaction
 from ..services import entities
-from .common import Conn, Text
+from ..services import entries as knowledge
+from .common import Conn, LongText, Text
 
 router = APIRouter(prefix="/api/entities", tags=["entities"])
 
@@ -16,6 +19,11 @@ class AliasIn(BaseModel):
     jurisdiction: str | None = None
 
 
+class TemplateEntry(BaseModel):
+    section_id: str
+    body: LongText
+
+
 class EntityCreate(BaseModel):
     entity_type_id: str
     name: Text
@@ -23,6 +31,8 @@ class EntityCreate(BaseModel):
     status_code: str = "proposed"
     aliases: list[AliasIn] = []
     allow_duplicate: bool = False  # set after the user has seen the duplicate warning
+    entries: list[TemplateEntry] = []  # the template boxes the user filled in (all optional)
+    entries_scope: Literal["general", "lecture", "personal", "both"] = "general"
 
 
 class EntityUpdate(BaseModel):
@@ -39,11 +49,15 @@ def list_entities(conn: Conn, q: str | None = None, include_archived: bool = Fal
 
 @router.post("", status_code=201)
 def create_entity(body: EntityCreate, conn: Conn):
-    with transaction(conn):
-        return entities.create_entity(
+    with transaction(conn):  # the entity and its filled-in boxes are saved together, or not at all
+        created = entities.create_entity(
             conn, entity_type_id=body.entity_type_id, name=body.name, description=body.description,
             status_code=body.status_code, aliases=[a.model_dump() for a in body.aliases],
             allow_duplicate=body.allow_duplicate)
+        for e in body.entries:
+            knowledge.create_entry(conn, entity_id=created["id"], scope=body.entries_scope, section_id=e.section_id,
+                                   body=e.body, status_code=body.status_code)
+        return created
 
 
 @router.get("/{entity_id}")

@@ -3,6 +3,8 @@ import { useState } from 'react'
 import { api, type Entity } from './api'
 import { BackupReminder, BackupsPage } from './BackupsPage'
 import { StructurePage } from './chem/StructurePage'
+import { ComparePage } from './compare/ComparePage'
+import { TemplatesPage } from './templates/TemplatesPage'
 import { EntityForm } from './entity/EntityForm'
 import { EntityList } from './entity/EntityList'
 import { EntityPage } from './entity/EntityPage'
@@ -14,7 +16,9 @@ const parts = (path: string) => path.split('/').filter(Boolean)
 
 /** What a panel shows for an address like "/entity/<id>". */
 function PanelBody({ path }: { path: string }) {
-  const [page, id] = parts(path)
+  const [page, id, second] = parts(path)
+  if (page === 'compare') return <ComparePage first={id} second={second} />
+  if (page === 'templates') return <TemplatesPage />
   if (page === 'graph' && id) return <GraphPanel key={id} initialFocus={id} />
   if (page === 'entity' && id) return <EntityPage key={id} id={id} />
   if (page === 'structure' && id) return <StructurePage key={id} id={id} />
@@ -34,6 +38,8 @@ function useTitle(path: string) {
   if (page === 'structure') return 'Structure'
   if (page === 'backups') return 'Backups'
   if (page === 'notes') return 'Notes'
+  if (page === 'compare') return 'Compare'
+  if (page === 'templates') return 'Templates'
   return 'Start'
 }
 
@@ -85,6 +91,8 @@ export default function App() {
           <a href="#/notes" className={activePage === 'notes' ? 'current' : ''}>
             Notes{inbox?.count ? ` (${inbox.count} in inbox)` : ''}
           </a>
+          <a href="#/compare" className={activePage === 'compare' ? 'current' : ''}>Compare</a>
+          <a href="#/templates" className={activePage === 'templates' ? 'current' : ''}>Templates</a>
           <a href="#/backups" className={activePage === 'backups' ? 'current' : ''}>Backups</a>
         </nav>
       </aside>

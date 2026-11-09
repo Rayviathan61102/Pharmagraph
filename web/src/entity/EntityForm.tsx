@@ -1,6 +1,6 @@
 // Create a new entity, or edit an existing one.
 import { useState, type FormEvent } from 'react'
-import { api, ApiError, useLookups, useSave, type Entity } from '../api'
+import { api, ApiError, templateSections, uploadImage, useLookups, useSave, type Entity } from '../api'
 import { Dialog, ErrorText, entityLink, go } from '../ui'
 
 type Duplicate = { id: string; name: string; entity_type_id: string; archived: number }
@@ -15,6 +15,16 @@ export function EntityForm({ entity, onClose }: { entity?: Entity; onClose: () =
   const [aliases, setAliases] = useState('')
   const [reason, setReason] = useState('')
   const [duplicates, setDuplicates] = useState<Duplicate[] | null>(null)
+  const [bodies, setBodies] = useState<Record<string, string>>({})
+  const [scope, setScope] = useState('general')
+  const [image, setImage] = useState<File | null>(null)
+  const [imageError, setImageError] = useState('')
+  const boxes = lookups ? templateSections(lookups, typeId) : []
+  const pickImage = (file: File | null) => {
+    const tooBig = !!file && file.size > 8 * 1024 * 1024
+    setImageError(tooBig ? 'This image is larger than 8 MB.' : '')
+    setImage(tooBig ? null : file)
+  }
 
   async function submit(allowDuplicate = false) {
     const fields = { name, entity_type_id: typeId, description: description.trim() || null }
@@ -24,9 +34,18 @@ export function EntityForm({ entity, onClose }: { entity?: Entity; onClose: () =
         onClose()
       } else {
         const aliasList = aliases.split(',').map((a) => a.trim()).filter(Boolean).map((alias) => ({ alias }))
-        const created: Entity = await save.mutateAsync(() => api.post('/entities', {
-          ...fields, status_code: status, aliases: aliasList, allow_duplicate: allowDuplicate,
-        }))
+        // Only boxes of the chosen template that were actually filled in (switching type keeps your typing).
+        const entries = boxes.filter((s) => bodies[s.id]?.trim()).map((s) => ({ section_id: s.id, body: bodies[s.id] }))
+        const created: Entity = await save.mutateAsync(async () => {
+          const made = await api.post<Entity>('/entities', {
+            ...fields, status_code: status, aliases: aliasList, allow_duplicate: allowDuplicate, entries, entries_scope: scope,
+          })
+          if (image && boxes.some((s) => s.id === 'image')) {
+            // The entity is already saved here, so a failed upload must not look like a failed create.
+            await uploadImage(made.id, image).catch((err) => window.alert(`Saved, but the image failed: ${err.message}`))
+          }
+          return made
+        })
         onClose()
         go(entityLink(created.id))
       }
@@ -58,6 +77,31 @@ export function EntityForm({ entity, onClose }: { entity?: Entity; onClose: () =
               {lookups?.statuses.map((s) => <option key={s.code} value={s.code}>{s.label}</option>)}
             </select>
           </label>
+          {boxes.length > 0 && (
+            <fieldset className="choices template-boxes">
+              <legend>Details <span className="hint">(all optional — fill in what you have)</span></legend>
+              <label>Save this information as
+                <select value={scope} onChange={(e) => setScope(e.target.value)}>
+                  <option value="general">General scientific knowledge</option>
+                  <option value="lecture">Lecture-specific</option>
+                  <option value="personal">Personal</option>
+                  <option value="both">Both general and lecture (two linked entries)</option>
+                </select>
+              </label>
+              {boxes.map((s) => s.id === 'image' ? (
+                <label key={s.id}>{s.label} <span className="hint">(PNG, JPEG, GIF or WebP, up to 8 MB)</span>
+                  <input type="file" accept="image/png,image/jpeg,image/gif,image/webp"
+                    onChange={(e) => pickImage(e.target.files?.[0] ?? null)} />
+                  {imageError && <span className="error">{imageError}</span>}
+                </label>
+              ) : (
+                <label key={s.id}>{s.label}
+                  <textarea rows={2} value={bodies[s.id] ?? ''}
+                    onChange={(e) => setBodies({ ...bodies, [s.id]: e.target.value })} />
+                </label>
+              ))}
+            </fieldset>
+          )}
         </>}
         {entity && (
           <label>Reason for this change <span className="hint">(optional)</span>

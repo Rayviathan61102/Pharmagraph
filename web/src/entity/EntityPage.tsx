@@ -87,6 +87,7 @@ export function EntityPage({ id }: { id: string }) {
         {!archived && (
           <div className="actions">
             <a className="button-link" href={`#/graph/${id}`}>Open in graph</a>
+            <a className="button-link" href={`#/compare/${id}`}>Compare</a>
             <OpenInOther path={`/graph/${id}`} what="Graph" className="" />
             <button onClick={() => setEditing(true)}>Edit</button>
             <button onClick={archive}>Archive</button>

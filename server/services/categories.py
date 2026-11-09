@@ -51,8 +51,19 @@ def update_category(conn, category_id: str, changes: dict) -> dict:
 
 
 def set_archived(conn, category_id: str, archived: bool) -> dict:
-    history.get_row(conn, "category", category_id)
-    conn.execute("UPDATE category SET archived_at = ? WHERE id = ?", (now() if archived else None, category_id))
+    """Delete (archive) or restore a category together with its subfolders. Entities are never touched.
+
+    Restoring brings back only what this delete removed (same timestamp), not subfolders deleted earlier.
+    """
+    category = history.get_row(conn, "category", category_id)
+    subtree = """WITH RECURSIVE down(id) AS (
+                   SELECT ? UNION ALL SELECT c.id FROM category c JOIN down ON c.parent_id = down.id)"""
+    if archived:
+        conn.execute(f"{subtree} UPDATE category SET archived_at = ? WHERE archived_at IS NULL AND id IN (SELECT id FROM down)",
+                     (category_id, now()))
+    else:
+        conn.execute(f"{subtree} UPDATE category SET archived_at = NULL WHERE archived_at IS ? AND id IN (SELECT id FROM down)",
+                     (category_id, category["archived_at"]))
     return history.get_row(conn, "category", category_id)
 
 

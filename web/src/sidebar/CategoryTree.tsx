@@ -45,7 +45,7 @@ function CategoryItem({ node, currentId }: { node: CategoryNode; currentId?: str
         </button>
         <button className="tree-tool" aria-label={`Add a subcategory to ${node.name}`} title="Add subcategory"
           onClick={() => setAddingChild(true)}>+</button>
-        <button className="tree-tool" aria-label={`Edit category ${node.name}`} title="Rename, move or archive"
+        <button className="tree-tool" aria-label={`Edit category ${node.name}`} title="Rename, move or delete"
           onClick={() => setEditing(true)}>⋯</button>
       </div>
       {open && <LevelList parentId={node.id} currentId={currentId} />}

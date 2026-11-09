@@ -1,4 +1,4 @@
-// Create, rename, move or archive a category.
+// Create, rename, move or delete a category.
 import { useState, type FormEvent } from 'react'
 import { api, useAllCategories, useSave, type CategoryNode } from '../api'
 import { Dialog, ErrorText } from '../ui'
@@ -11,6 +11,7 @@ export function CategoryForm({ category, parentId = null, onClose }: Props) {
   const [name, setName] = useState(category?.name ?? '')
   const [parent, setParent] = useState(category?.parent_id ?? parentId ?? '')
   const [description, setDescription] = useState(category?.description ?? '')
+  const [confirmingDelete, setConfirmingDelete] = useState(false)
 
   // A category cannot go inside itself or its own subcategories (the server checks this too).
   const isInsideThis = (id: string | null) => {
@@ -27,8 +28,7 @@ export function CategoryForm({ category, parentId = null, onClose }: Props) {
     await save.mutateAsync(() => category ? api.patch(`/categories/${category.id}`, body) : api.post('/categories', body))
     onClose()
   }
-  const archive = async () => {
-    if (!window.confirm(`Archive the category "${category!.name}"? Its entities are not affected.`)) return
+  const remove = async () => {
     await save.mutateAsync(() => api.post(`/categories/${category!.id}/archive`))
     onClose()
   }
@@ -47,8 +47,15 @@ export function CategoryForm({ category, parentId = null, onClose }: Props) {
           <input value={description} onChange={(e) => setDescription(e.target.value)} />
         </label>
         <ErrorText error={save.error} />
+        {confirmingDelete && (
+          <p className="warning" role="alert">
+            Delete “{category!.name}”{category!.child_count > 0 && ' and its subfolders'}? The entities inside are kept;
+            they just leave this folder.
+          </p>
+        )}
         <div className="actions">
-          {category && <button type="button" onClick={archive}>Archive category</button>}
+          {category && !confirmingDelete && <button type="button" className="danger" onClick={() => setConfirmingDelete(true)}>Delete category</button>}
+          {confirmingDelete && <button type="button" className="danger" disabled={save.isPending} onClick={remove}>Yes, delete</button>}
           <span style={{ flex: 1 }} />
           <button type="button" onClick={onClose}>Cancel</button>
           <button type="submit" className="primary" disabled={save.isPending}>{category ? 'Save' : 'Create'}</button>

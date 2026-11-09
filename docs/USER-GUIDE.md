@@ -35,6 +35,22 @@ app never touches your data).
 - Click the **status badge** (Proposed, Verified …) to change or re-confirm the status. A reason is
   required, and every review is kept.
 
+### Templates
+
+Choosing a type in **New entity** shows that type's boxes (Drug: Mechanism of action, Half-life …; Enzyme:
+Image, Substrates, Inhibitors …; Disease: Etiology, Diagnosis …; Dosage form: Composition, Stability …).
+Every box is optional; only the ones you fill in are saved, and you can choose whether they are general,
+lecture, personal or both.
+
+**Templates** (bottom of the sidebar) lets you change a template's topics and their order, or create your
+own. Removing a topic never deletes what you wrote.
+
+### Comparing two entities
+
+**Compare** (bottom of the sidebar, or on an entity page) shows two entities in a table: structure,
+formula, weight, every topic with information, and relationships. Links that appear on both sides are
+green. Tick lecture or personal to include those too.
+
 ## 4. Knowledge entries
 
 Each section (Overview, Mechanism, Pharmacokinetics, Dosage …) has **+ Add**. You first choose the kind:
@@ -87,7 +103,8 @@ Under **Chemical properties**:
 - **Search box** (sidebar): names, other names, Thai text, words inside your entries. Results show why
   they matched.
 - **Categories** (sidebar): folders for navigation. One entity can be in several folders. Use **+** / **⋯**
-  next to a folder to add a subfolder, rename, move or archive it. Keyboard: Tab, Enter/Space.
+  next to a folder to add a subfolder, rename, move or delete it. Deleting a folder also removes its
+  subfolders, but never the entities inside. Keyboard: Tab, Enter/Space.
 
 ## 9. The graph
 
