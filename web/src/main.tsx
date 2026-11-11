@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 // Fonts are bundled with the app (not loaded from the internet), so they work offline.
 import '@fontsource/inter/400.css'
+import '@fontsource/inter/500.css'
 import '@fontsource/inter/600.css'
 import '@fontsource/noto-sans-thai/400.css'
 import './theme.css'

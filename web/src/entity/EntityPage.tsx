@@ -3,7 +3,8 @@ import { useQuery } from '@tanstack/react-query'
 import { useEffect, useState, type FormEvent } from 'react'
 import { api, useSave, type Entity } from '../api'
 import { History } from '../History'
-import { ErrorText, askReason, formatTime } from '../ui'
+import { rememberOpened } from '../home/HomePage'
+import { ErrorText, Icon, askReason, formatTime } from '../ui'
 import { OpenInOther } from '../workspace/Workspace'
 import { StatusButton } from './StatusDialog'
 import { Entries } from './Entries'
@@ -47,6 +48,7 @@ export function EntityPage({ id }: { id: string }) {
   })
   useEffect(() => {
     document.title = entity ? `${entity.name} · PharmaGraph` : 'PharmaGraph'
+    if (entity && !entity.archived_at) rememberOpened(entity)
     return () => { document.title = 'PharmaGraph' }
   }, [entity?.name])
   if (error) return <p className="error">{String(error)}</p>
@@ -64,12 +66,13 @@ export function EntityPage({ id }: { id: string }) {
       {archived && (
         <div className="archived-banner" role="status">
           Archived {formatTime(entity.archived_at!)}{entity.archive_reason && ` — ${entity.archive_reason}`}
-          <button onClick={restore}>Restore</button>
+          <button onClick={restore}><Icon name="restore" /> Restore</button>
         </div>
       )}
       <header>
-        <p className="muted">{entity.type_label}</p>
+        <p className="type-tag">{entity.type_label}</p>
         <h1>{entity.name} <StatusButton kind="entities" id={id} current={entity.status_code} readOnly={archived} /></h1>
+        <p className="lead">{entity.description || <span className="muted">No short description yet.</span>}</p>
         {entity.aliases.length > 0 && (
           <ul className="chips" aria-label="Other names">
             {entity.aliases.map((a) => (
@@ -86,18 +89,17 @@ export function EntityPage({ id }: { id: string }) {
         <EntityCategories entityId={id} readOnly={archived} />
         {!archived && (
           <div className="actions">
-            <a className="button-link" href={`#/graph/${id}`}>Open in graph</a>
-            <a className="button-link" href={`#/compare/${id}`}>Compare</a>
+            <a className="button-link primary" href={`#/graph/${id}`}><Icon name="graph" /> Open in graph</a>
+            <a className="button-link" href={`#/compare/${id}`}><Icon name="compare" /> Compare</a>
             <OpenInOther path={`/graph/${id}`} what="Graph" className="" />
-            <button onClick={() => setEditing(true)}>Edit</button>
-            <button onClick={archive}>Archive</button>
+            <button onClick={() => setEditing(true)}><Icon name="edit" /> Edit</button>
+            <button onClick={archive}><Icon name="archive" /> Archive</button>
           </div>
         )}
         <ErrorText error={save.error} />
       </header>
 
-      <section>
-        <p className="lead">{entity.description || <span className="muted">No short description yet.</span>}</p>
+      <section className="page-tools">
         {!archived && <AliasAdder entityId={id} />}
         <label className="check">
           <input type="checkbox" checked={showArchived} onChange={(e) => setShowArchived(e.target.checked)} />

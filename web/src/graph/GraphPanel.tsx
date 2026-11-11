@@ -10,7 +10,7 @@ import cytoscape, { type Core } from 'cytoscape'
 import { useQuery } from '@tanstack/react-query'
 import { useEffect, useReducer, useRef, useState } from 'react'
 import { api, useLookups, type Entity, type Scope } from '../api'
-import { ErrorText, StatusBadge, entityLink } from '../ui'
+import { ErrorText, Icon, StatusBadge, entityLink } from '../ui'
 import { OpenInOther, usePanel } from '../workspace/Workspace'
 
 type GNode = { id: string; name: string; entity_type_id: string; status_code: string }
@@ -23,17 +23,20 @@ const SCOPES: Scope[] = ['general', 'lecture', 'personal']
 const WARN_AT = 300 // spec 7.1: keep the view focused; suggest collapsing beyond this
 
 // Node colours by kind of entity (same muted palette as theme.css; Cytoscape cannot read CSS variables).
-const COLOR_GROUPS: [string, string[]][] = [
-  ['#6b8fbf', ['drug', 'drug_class', 'medicinal_product', 'regimen']],
-  ['#b97272', ['disease', 'clinical_condition', 'population']],
-  ['#b99a5f', ['pathogen']],
-  ['#6fa58a', ['protein', 'receptor', 'enzyme', 'pathway', 'physiological_process', 'cell']],
-  ['#8f7fc0', ['organ_system', 'organ', 'tissue']],
-  ['#5fa3a3', ['dosage_form', 'formulation', 'excipient', 'manufacturing_process', 'equipment', 'analytical_technique']],
+const COLOR_GROUPS: [string, string[], string][] = [
+  ['#7ba4e0', ['drug', 'drug_class', 'medicinal_product', 'regimen'], 'Drugs'],
+  ['#d98585', ['disease', 'clinical_condition', 'population'], 'Diseases & conditions'],
+  ['#d3aa62', ['pathogen'], 'Pathogens'],
+  ['#6fbf9a', ['protein', 'receptor', 'enzyme', 'pathway', 'physiological_process', 'cell'], 'Proteins & pathways'],
+  ['#a593dc', ['organ_system', 'organ', 'tissue'], 'Organs & tissues'],
+  ['#62b5b5', ['dosage_form', 'formulation', 'excipient', 'manufacturing_process', 'equipment', 'analytical_technique'], 'Pharmaceutics'],
 ]
-const colorOf = (type: string) => COLOR_GROUPS.find(([, types]) => types.includes(type))?.[0] ?? '#8b919c'
+const OTHER_COLOR = '#8d95a4'
+const colorOf = (type: string) => COLOR_GROUPS.find(([, types]) => types.includes(type))?.[0] ?? OTHER_COLOR
+// A node grows with its number of connections (shown + hidden), so the important entities stand out.
+const sizeOf = (connections: number) => 20 + Math.min(connections, 14) * 1.6
 const nodeData = (n: GNode) => ({
-  id: n.id, name: n.name, label: n.name, type: n.entity_type_id, color: colorOf(n.entity_type_id), badge: 'none',
+  id: n.id, name: n.name, label: n.name, type: n.entity_type_id, color: colorOf(n.entity_type_id), badge: 'none', size: 22,
 })
 
 // The number of hidden neighbours is drawn INSIDE the node as a small image, so the label text never changes
@@ -49,20 +52,25 @@ const badge = (hidden: number) => {
 const STYLE: cytoscape.StylesheetJson = [
   { selector: 'node', style: {
     'background-color': 'data(color)', 'background-image': 'data(badge)', 'background-fit': 'contain',
-    label: 'data(label)', color: '#d7dae0', 'font-size': 11, 'line-height': 1.25,
+    label: 'data(label)', color: '#e4e7ed', 'font-size': 11, 'line-height': 1.25,
     'font-family': 'Inter, Noto Sans Thai, sans-serif', 'text-valign': 'bottom', 'text-margin-y': 4,
-    'text-wrap': 'wrap', 'text-max-width': '130px', width: 22, height: 22,
-    'text-background-color': '#16181d', 'text-background-opacity': 0.7, 'text-background-padding': '1px' } },
-  { selector: 'node[?focus]', style: { width: 32, height: 32, 'border-width': 2, 'border-color': '#d7dae0', 'font-weight': 600 } },
-  { selector: 'node:selected', style: { 'border-width': 3, 'border-color': '#e8ebf0' } },
+    'text-wrap': 'wrap', 'text-max-width': '130px', width: 'data(size)', height: 'data(size)',
+    'transition-property': 'opacity', 'transition-duration': 160,
+    'text-background-color': '#0f1116', 'text-background-opacity': 0.8, 'text-background-padding': '2px',
+    'text-background-shape': 'roundrectangle' } },
+  { selector: 'node[?focus]', style: { 'border-width': 2, 'border-color': '#e4e7ed', 'font-weight': 600 } },
+  { selector: 'node:selected', style: { 'border-width': 3, 'border-color': '#ffffff' } },
   { selector: 'edge', style: {
-    width: 1.2, 'line-color': '#4a515e', 'target-arrow-color': '#4a515e', 'target-arrow-shape': 'triangle',
-    'curve-style': 'bezier', label: 'data(label)', 'font-size': 9, color: '#8b919c', 'text-rotation': 'autorotate',
-    'text-background-color': '#16181d', 'text-background-opacity': 1, 'text-background-padding': '1px',
-    'min-zoomed-font-size': 8 } },
+    width: 1.3, 'line-color': '#4b5364', 'target-arrow-color': '#4b5364', 'target-arrow-shape': 'triangle',
+    'curve-style': 'bezier', label: 'data(label)', 'font-size': 9, color: '#8d95a4', 'text-rotation': 'autorotate',
+    'text-background-color': '#0f1116', 'text-background-opacity': 1, 'text-background-padding': '1px',
+    'min-zoomed-font-size': 8, 'transition-property': 'opacity, width', 'transition-duration': 160 } },
   { selector: 'edge[directed = 0]', style: { 'target-arrow-shape': 'none' } },
-  { selector: 'edge[scope = "lecture"]', style: { 'line-style': 'dashed', 'line-color': '#8f7fc0', 'target-arrow-color': '#8f7fc0' } },
-  { selector: 'edge[scope = "personal"]', style: { 'line-style': 'dotted', 'line-color': '#6fa58a', 'target-arrow-color': '#6fa58a' } },
+  { selector: 'edge[scope = "lecture"]', style: { 'line-style': 'dashed', 'line-color': '#a593dc', 'target-arrow-color': '#a593dc' } },
+  // While the mouse is over a node, everything not connected to it fades back.
+  { selector: '.faded', style: { opacity: 0.14 } },
+  { selector: 'edge.lit', style: { width: 2.4 } },
+  { selector: 'edge[scope = "personal"]', style: { 'line-style': 'dotted', 'line-color': '#6fbf9a', 'target-arrow-color': '#6fbf9a' } },
 ]
 
 function Inspector({ id, hidden, onFocus, onExpand }: { id: string; hidden: number; onFocus: () => void; onExpand: () => void }) {
@@ -70,7 +78,7 @@ function Inspector({ id, hidden, onFocus, onExpand }: { id: string; hidden: numb
   if (!e) return null
   return (
     <aside className="graph-inspector" aria-label="Selected entity">
-      <p className="muted">{e.type_label}</p>
+      <p className="type-tag">{e.type_label}</p>
       <h3>{e.name} <StatusBadge code={e.status_code} /></h3>
       {e.aliases.length > 0 && <p className="muted">{e.aliases.map((a) => a.alias).join(' · ')}</p>}
       {e.description && <p>{e.description}</p>}
@@ -119,7 +127,8 @@ export function GraphPanel({ initialFocus }: { initialFocus: string }) {
     })))
     g.nodes().forEach((n) => {
       const hidden = view.hidden[n.id()] ?? 0
-      n.data({ hidden, badge: badge(hidden) }) // the label itself never changes
+      const size = sizeOf(n.degree(false) + hidden) + (n.data('focus') ? 8 : 0)
+      n.data({ hidden, badge: badge(hidden), size }) // the label itself never changes
     })
     refresh()
   }
@@ -221,6 +230,12 @@ export function GraphPanel({ initialFocus }: { initialFocus: string }) {
     })
     g.on('cxttap', 'node', (e) => setMenu({ x: e.renderedPosition.x, y: e.renderedPosition.y, id: e.target.id() }))
     g.on('tap', (e) => { if (e.target === g) { setSelected(null); setMenu(null) } })
+    g.on('mouseover', 'node', (e) => {
+      const near = e.target.closedNeighborhood()
+      g.elements().not(near).addClass('faded')
+      near.edges().addClass('lit')
+    })
+    g.on('mouseout', 'node', () => g.elements().removeClass('faded lit'))
     // Cytoscape measures each label once and caches the picture. If that happens before the bundled fonts
     // have loaded, labels are measured with a fallback font and later appear squashed or cut off.
     const fontsReady = Promise.all(['11px Inter', '600 11px Inter', '11px "Noto Sans Thai"']
@@ -239,6 +254,9 @@ export function GraphPanel({ initialFocus }: { initialFocus: string }) {
 
   const g = live()
   const count = g?.nodes().length ?? 0
+  const typesShown = new Set(g?.nodes().map((n) => n.data('type') as string))
+  const legend = COLOR_GROUPS.filter(([, types]) => types.some((t) => typesShown.has(t))).map(([color, , label]) => ({ color, label }))
+  if ([...typesShown].some((t) => colorOf(t) === OTHER_COLOR)) legend.push({ color: OTHER_COLOR, label: 'Other' })
   const hiddenOf = (id: string) => (g?.getElementById(id).data('hidden') as number | undefined) ?? 0
   const setFilter = (change: Partial<typeof filters.current>) => {
     filters.current = { ...filters.current, ...change }
@@ -248,9 +266,9 @@ export function GraphPanel({ initialFocus }: { initialFocus: string }) {
   return (
     <section className="graph-panel">
       <div className="graph-toolbar">
-        <button onClick={goBack} disabled={back.current.length === 0} aria-label="Back">←</button>
-        <button onClick={goForward} disabled={forward.current.length === 0} aria-label="Forward">→</button>
-        <button onClick={() => live()?.fit(undefined, 60)}>Fit</button>
+        <button onClick={goBack} disabled={back.current.length === 0} aria-label="Back" title="Back"><Icon name="back" /></button>
+        <button onClick={goForward} disabled={forward.current.length === 0} aria-label="Forward" title="Forward"><Icon name="forward" /></button>
+        <button onClick={() => live()?.fit(undefined, 60)} title="Zoom to show everything"><Icon name="fit" /> Fit</button>
         <select value={filters.current.type} onChange={(e) => setFilter({ type: e.target.value })}
           aria-label="Relationship type filter">
           <option value="">All relationship types</option>
@@ -269,11 +287,16 @@ export function GraphPanel({ initialFocus }: { initialFocus: string }) {
         {count > WARN_AT && <span className="caution">Many items on screen. Collapse some or use filters.</span>}
       </div>
       <p className="graph-help muted">
-        Number in a node = hidden neighbours · Click: select · Double-click: expand / collapse · Alt+click: focus · Right-click: menu
+        Number in a node = hidden neighbours · Bigger node = more connections · Hover: highlight links · Click: select · Double-click: expand / collapse · Alt+click: focus · Right-click: menu
       </p>
       <ErrorText error={error} />
       <div className="graph-stage">
         <div className="graph-canvas" ref={container} onContextMenu={(e) => e.preventDefault()} />
+        {legend.length > 0 && (
+          <ul className="graph-legend" aria-label="Colour key">
+            {legend.map((l) => <li key={l.label}><span style={{ background: l.color }} />{l.label}</li>)}
+          </ul>
+        )}
         {menu && (
           <div className="graph-menu" role="menu" style={{ left: menu.x, top: menu.y }}>
             <a role="menuitem" href={entityLink(menu.id)}>Open details</a>

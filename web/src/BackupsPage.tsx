@@ -2,7 +2,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
 import { api, useSave } from './api'
-import { ErrorText, formatTime } from './ui'
+import { ErrorText, Icon, formatTime } from './ui'
 
 type Backup = {
   name: string; kind?: string; created_at?: string; schema_version?: number; entities?: number
@@ -24,10 +24,11 @@ export function BackupReminder() {
   if (!data?.reminder) return null
   return (
     <div className="reminder" role="status">
-      {data.last_backup_at
+      <Icon name="alert" />
+      <span>{data.last_backup_at
         ? `Your last backup was on ${formatTime(data.last_backup_at)}. It's time for a new one.`
         : 'You have not made a backup yet.'}{' '}
-      <a href="#/backups">Go to Backups</a>
+      <a href="#/backups">Go to Backups</a></span>
     </div>
   )
 }
@@ -60,7 +61,7 @@ export function BackupsPage() {
       <div className="actions">
         <button className="primary" disabled={save.isPending}
           onClick={async () => { await save.mutateAsync(() => api.post('/backups')); setMessage('Backup made and checked.') }}>
-          Back up now
+          <Icon name="backup" /> Back up now
         </button>
       </div>
       {message && <p className="ok" role="status">{message}</p>}
@@ -84,9 +85,9 @@ export function BackupsPage() {
               <td>{b.entities ?? '—'}</td>
               <td>{(b.size_bytes / 1024).toFixed(0)} KB</td>
               <td className="row-actions">
-                <button onClick={() => check(b.name)}>Check</button>
-                <a href={`/api/backups/${b.name}/download`} download>Download</a>
-                <button onClick={() => restore(b)} disabled={!!b.error}>Restore</button>
+                <button onClick={() => check(b.name)}><Icon name="check" size={14} /> Check</button>
+                <a href={`/api/backups/${b.name}/download`} download><Icon name="download" size={14} /> Download</a>
+                <button onClick={() => restore(b)} disabled={!!b.error}><Icon name="restore" size={14} /> Restore</button>
               </td>
             </tr>
           ))}

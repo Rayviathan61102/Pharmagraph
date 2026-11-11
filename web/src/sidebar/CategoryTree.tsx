@@ -2,7 +2,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
 import { api, type CategoryNode, type EntitySummary } from '../api'
-import { entityLink } from '../ui'
+import { Icon, entityLink } from '../ui'
 import { CategoryForm } from './CategoryForm'
 
 type Level = { categories: CategoryNode[]; entities: EntitySummary[] }
@@ -40,13 +40,14 @@ function CategoryItem({ node, currentId }: { node: CategoryNode; currentId?: str
             <path d="M3.5 1.5 7 5 3.5 8.5" fill="none" stroke="currentColor" strokeWidth="1.6"
               strokeLinecap="round" strokeLinejoin="round" />
           </svg>
+          <Icon name="folder" size={14} />
           {node.name}
           {node.entity_count > 0 && <span className="tree-count">{node.entity_count}</span>}
         </button>
         <button className="tree-tool" aria-label={`Add a subcategory to ${node.name}`} title="Add subcategory"
-          onClick={() => setAddingChild(true)}>+</button>
+          onClick={() => setAddingChild(true)}><Icon name="plus" size={14} /></button>
         <button className="tree-tool" aria-label={`Edit category ${node.name}`} title="Rename, move or delete"
-          onClick={() => setEditing(true)}>⋯</button>
+          onClick={() => setEditing(true)}><Icon name="more" size={14} /></button>
       </div>
       {open && <LevelList parentId={node.id} currentId={currentId} />}
       {editing && <CategoryForm category={node} onClose={() => setEditing(false)} />}
@@ -61,7 +62,7 @@ export function CategoryTree({ currentId }: { currentId?: string }) {
     <section className="category-tree">
       <div className="section-head">
         <h2>Categories</h2>
-        <button className="link" onClick={() => setCreating(true)}>+ New</button>
+        <button className="link" onClick={() => setCreating(true)}><Icon name="plus" size={13} /> New</button>
       </div>
       <LevelList parentId={null} currentId={currentId} />
       {creating && <CategoryForm onClose={() => setCreating(false)} />}

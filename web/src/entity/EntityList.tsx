@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
 import { api, type EntitySummary } from '../api'
 import { CategoryTree } from '../sidebar/CategoryTree'
-import { entityLink } from '../ui'
+import { Icon, entityLink } from '../ui'
 
 type SearchHit = EntitySummary & { type_label: string; matched: string[]; snippet: string | null }
 
@@ -33,8 +33,11 @@ export function EntityList({ currentId }: { currentId?: string }) {
 
   return (
     <section className="entity-list">
-      <input type="search" placeholder="Search names, other names, notes…" value={q}
-        onChange={(e) => setQ(e.target.value)} aria-label="Search" />
+      <div className="search-box">
+        <Icon name="search" />
+        <input type="search" placeholder="Search names, other names, notes…" value={q}
+          onChange={(e) => setQ(e.target.value)} aria-label="Search" />
+      </div>
       <label className="check">
         <input type="checkbox" checked={showArchived} onChange={(e) => setShowArchived(e.target.checked)} />
         Include archived

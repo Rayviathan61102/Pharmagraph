@@ -4,7 +4,7 @@ import { useState } from 'react'
 import Markdown from 'react-markdown'
 import { api, templateSections, useLookups, useSave, type Entity, type Entry, type Lookups, type Section } from '../api'
 import { History } from '../History'
-import { ErrorText, askReason } from '../ui'
+import { ErrorText, Icon, askReason } from '../ui'
 import { ChemistrySection } from '../chem/ChemistrySection'
 import { EntryNotes } from '../notes/Notes'
 import { Conditions } from './Conditions'
@@ -53,13 +53,13 @@ function EntryCard({ entry, readOnly }: { entry: Entry; readOnly: boolean }) {
       <Evidence owner="entries" ownerId={entry.id} evidence={entry.evidence} readOnly={readOnly || archived} />
       <EntryNotes entityId={entry.entity_id} entryId={entry.id} readOnly={readOnly || archived} />
       <div className="entry-actions">
-        {!readOnly && !archived && <button className="link" onClick={() => setEditing(true)}>Edit</button>}
-        {!readOnly && !archived && <button className="link" onClick={archive}>Archive</button>}
+        {!readOnly && !archived && <button className="link" onClick={() => setEditing(true)}><Icon name="edit" size={13} /> Edit</button>}
+        {!readOnly && !archived && <button className="link" onClick={archive}><Icon name="archive" size={13} /> Archive</button>}
         {!readOnly && archived && (
-          <button className="link" onClick={() => save.mutate(() => api.post(`/entries/${entry.id}/unarchive`))}>Restore</button>
+          <button className="link" onClick={() => save.mutate(() => api.post(`/entries/${entry.id}/unarchive`))}><Icon name="restore" size={13} /> Restore</button>
         )}
         <button className="link" onClick={() => setShowHistory(!showHistory)}>
-          {showHistory ? 'Hide history' : `History (v${entry.version})`}
+          <Icon name="history" size={13} /> {showHistory ? 'Hide history' : `History (v${entry.version})`}
         </button>
       </div>
       <ErrorText error={save.error} />
@@ -98,7 +98,7 @@ export function Entries({ entity, showArchived }: { entity: Entity; showArchived
           <section key={section.id} id={`sec-${section.id}`} className="knowledge-section">
             <div className="section-head">
               <h2>{section.label}</h2>
-              {!readOnly && section.id !== 'image' && <button className="link" onClick={() => setAddingTo(section.id)}>+ Add</button>}
+              {!readOnly && section.id !== 'image' && <button className="link" onClick={() => setAddingTo(section.id)}><Icon name="plus" size={13} /> Add</button>}
             </div>
             {section.id === 'image' && <EntityImages entity={entity} readOnly={readOnly} />}
             {section.id === 'chemistry' && <ChemistrySection entity={entity} readOnly={readOnly} />}
@@ -109,7 +109,7 @@ export function Entries({ entity, showArchived }: { entity: Entity; showArchived
         )
       })}
       {!readOnly && (
-        <button onClick={() => setAddingTo('overview')}>+ Add knowledge to another section</button>
+        <button onClick={() => setAddingTo('overview')}><Icon name="plus" /> Add knowledge to another section</button>
       )}
       {addingTo && <EntryForm entityId={entity.id} sectionId={addingTo} onClose={() => setAddingTo(null)} />}
     </>

@@ -7,7 +7,7 @@ import {
 } from '../api'
 import { EntityPicker } from '../EntityPicker'
 import { History } from '../History'
-import { Dialog, ErrorText, askReason, entityLink } from '../ui'
+import { Dialog, ErrorText, Icon, askReason, entityLink } from '../ui'
 import { Conditions } from './Conditions'
 import { Evidence } from './Evidence'
 import { StatusButton } from './StatusDialog'
@@ -157,10 +157,10 @@ function RelationshipRow({ rel, readOnly }: { rel: Relationship; readOnly: boole
       <Conditions owner="relationships" ownerId={rel.id} conditions={rel.contexts} readOnly={readOnly || archived} />
       <Evidence owner="relationships" ownerId={rel.id} evidence={rel.evidence} readOnly={readOnly || archived} />
       <div className="entry-actions">
-        {!readOnly && !archived && <button className="link" onClick={() => setEditing(true)}>Edit</button>}
-        {!readOnly && !archived && <button className="link" onClick={archive}>Archive</button>}
+        {!readOnly && !archived && <button className="link" onClick={() => setEditing(true)}><Icon name="edit" size={13} /> Edit</button>}
+        {!readOnly && !archived && <button className="link" onClick={archive}><Icon name="archive" size={13} /> Archive</button>}
         {!readOnly && archived && (
-          <button className="link" onClick={() => save.mutate(() => api.post(`/relationships/${rel.id}/unarchive`))}>Restore</button>
+          <button className="link" onClick={() => save.mutate(() => api.post(`/relationships/${rel.id}/unarchive`))}><Icon name="restore" size={13} /> Restore</button>
         )}
         <button className="link" onClick={() => setShowHistory(!showHistory)}>
           {showHistory ? 'Hide history' : `History (v${rel.version})`}
@@ -191,7 +191,7 @@ export function Relationships({ entity, showArchived }: { entity: Entity; showAr
     <section id="sec-related" className="knowledge-section">
       <div className="section-head">
         <h2>Related concepts</h2>
-        {!readOnly && <button className="link" onClick={() => setAdding(true)}>+ Add relationship</button>}
+        {!readOnly && <button className="link" onClick={() => setAdding(true)}><Icon name="plus" size={13} /> Add relationship</button>}
       </div>
       {data?.length === 0 && <p className="muted">No relationships yet.</p>}
       {[...groups].map(([label, rels]) => (

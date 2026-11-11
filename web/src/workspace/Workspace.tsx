@@ -3,6 +3,7 @@
 //
 // Navigation: every link in the app points at an address like "#/entity/<id>". When the address changes,
 // the ACTIVE panel (the one you last clicked in) shows it. The address bar always mirrors the active panel.
+import { Icon } from '../ui'
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type KeyboardEvent, type PointerEvent, type ReactNode } from 'react'
 
 type Panel = { history: string[]; index: number } // history of paths like "/entity/0193..."
@@ -119,10 +120,11 @@ export const PanelProvider = ({ value, children }: { value: PanelContext; childr
 
 /** "Open in other panel" button (opens the second panel if there is only one). */
 export function OpenInOther({ path, what = 'Open', className = 'link' }: { path: string; what?: string; className?: string }) {
+  const plain = className !== 'link' // a real button gets the panel icon; a text link stays text
   const { openInOther, panelCount } = usePanel()
   return (
     <button className={className} onClick={() => openInOther(path)}>
-      {what} in {panelCount < 2 ? 'second' : 'other'} panel
+      {plain && <Icon name="panel" />}{what} in {panelCount < 2 ? 'second' : 'other'} panel
     </button>
   )
 }

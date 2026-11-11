@@ -89,7 +89,7 @@ export function TemplatesPage() {
   }
 
   return (
-    <article className="notes-page">
+    <article className="templates-page">
       <h1>Templates</h1>
       <p className="muted">A template is the list of topics an entity type shows, and the optional boxes in “New entity”.</p>
       <form onSubmit={create} className="inline-form">

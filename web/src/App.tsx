@@ -9,7 +9,10 @@ import { EntityForm } from './entity/EntityForm'
 import { EntityList } from './entity/EntityList'
 import { EntityPage } from './entity/EntityPage'
 import { GraphPanel } from './graph/GraphPanel'
+import { HomePage } from './home/HomePage'
+import { StudyPage } from './study/StudyPage'
 import { NotesPage, useInboxCount } from './notes/Notes'
+import { Icon } from './ui'
 import { Divider, PanelProvider, useNarrow, useWorkspaceState } from './workspace/Workspace'
 
 const parts = (path: string) => path.split('/').filter(Boolean)
@@ -24,7 +27,8 @@ function PanelBody({ path }: { path: string }) {
   if (page === 'structure' && id) return <StructurePage key={id} id={id} />
   if (page === 'backups') return <BackupsPage />
   if (page === 'notes') return <NotesPage />
-  return <div className="empty"><p className="muted">Select an entity on the left, or create a new one.</p></div>
+  if (page === 'study') return <StudyPage />
+  return <HomePage />
 }
 
 function useTitle(path: string) {
@@ -40,7 +44,8 @@ function useTitle(path: string) {
   if (page === 'notes') return 'Notes'
   if (page === 'compare') return 'Compare'
   if (page === 'templates') return 'Templates'
-  return 'Start'
+  if (page === 'study') return 'Study'
+  return 'Home'
 }
 
 function PanelTitle({ path }: { path: string }) {
@@ -65,12 +70,12 @@ export default function App() {
         onPointerDownCapture={() => ws.activate(i)} onFocusCapture={() => ws.activate(i)}
         aria-label={`Panel ${i + 1}`}>
         <header className="panel-bar">
-          <button onClick={() => ws.back(i)} disabled={p.index === 0} aria-label="Back">←</button>
-          <button onClick={() => ws.forward(i)} disabled={p.index >= p.history.length - 1} aria-label="Forward">→</button>
+          <button className="icon-button" onClick={() => ws.back(i)} disabled={p.index === 0} aria-label="Back" title="Back"><Icon name="back" /></button>
+          <button className="icon-button" onClick={() => ws.forward(i)} disabled={p.index >= p.history.length - 1} aria-label="Forward" title="Forward"><Icon name="forward" /></button>
           <span className="panel-title"><PanelTitle path={ws.path(i)} /></span>
-          {!two && <button onClick={() => ws.openInOther(i, '/')}>+ Second panel</button>}
-          {two && !narrow && i === 0 && <button onClick={ws.swap} title="Swap the two panels">⇄ Swap</button>}
-          {two && <button onClick={() => ws.close(i)} aria-label={`Close panel ${i + 1}`}>✕</button>}
+          {!two && <button onClick={() => ws.openInOther(i, '/')}><Icon name="panel" /> Second panel</button>}
+          {two && !narrow && i === 0 && <button onClick={ws.swap} title="Swap the two panels"><Icon name="swap" /> Swap</button>}
+          {two && <button className="icon-button" onClick={() => ws.close(i)} aria-label={`Close panel ${i + 1}`} title="Close panel"><Icon name="x" /></button>}
         </header>
         <div className="panel-body">
           <PanelProvider value={{ index: i, panelCount: panels.length, openInOther: (path) => ws.openInOther(i, path) }}>
@@ -84,16 +89,18 @@ export default function App() {
   return (
     <div className="layout">
       <aside className="sidebar">
-        <div className="brand"><a href="#/">PharmaGraph</a></div>
-        <button className="primary wide" onClick={() => setCreating(true)}>+ New entity</button>
+        <div className="brand"><a href="#/"><span className="brand-mark"><Icon name="logo" size={18} /></span>PharmaGraph</a></div>
+        <button className="primary wide" onClick={() => setCreating(true)}><Icon name="plus" /> New entity</button>
         <EntityList currentId={currentEntity} />
-        <nav className="sidebar-footer">
+        <nav className="side-nav" aria-label="Tools">
+          <a href="#/study" className={activePage === 'study' ? 'current' : ''}><Icon name="study" /> Study</a>
           <a href="#/notes" className={activePage === 'notes' ? 'current' : ''}>
-            Notes{inbox?.count ? ` (${inbox.count} in inbox)` : ''}
+            <Icon name="note" /> Notes
+            {!!inbox?.count && <span className="nav-count" title={`${inbox.count} in inbox`}>{inbox.count}</span>}
           </a>
-          <a href="#/compare" className={activePage === 'compare' ? 'current' : ''}>Compare</a>
-          <a href="#/templates" className={activePage === 'templates' ? 'current' : ''}>Templates</a>
-          <a href="#/backups" className={activePage === 'backups' ? 'current' : ''}>Backups</a>
+          <a href="#/compare" className={activePage === 'compare' ? 'current' : ''}><Icon name="compare" /> Compare</a>
+          <a href="#/templates" className={activePage === 'templates' ? 'current' : ''}><Icon name="template" /> Templates</a>
+          <a href="#/backups" className={activePage === 'backups' ? 'current' : ''}><Icon name="backup" /> Backups</a>
         </nav>
       </aside>
       <main className="workspace-area">

@@ -5,7 +5,7 @@ import { useState, type FormEvent } from 'react'
 import Markdown from 'react-markdown'
 import { api, useSave, type EntitySummary } from '../api'
 import { EntityPicker } from '../EntityPicker'
-import { ErrorText, entityLink, formatTime } from '../ui'
+import { ErrorText, Icon, entityLink, formatTime } from '../ui'
 
 export type Note = {
   id: string; body: string; stage: string; created_at: string; updated_at: string; archived_at: string | null
@@ -90,7 +90,7 @@ export function NoteCard({ note, showWhere = true }: { note: Note; showWhere?: b
         )}
       </div>
       <div className="entry-actions">
-        {!archived && !editing && <button className="link" onClick={() => setEditing(true)}>Edit</button>}
+        {!archived && !editing && <button className="link" onClick={() => setEditing(true)}><Icon name="edit" size={13} /> Edit</button>}
         {!archived && !note.entity_id && !note.knowledge_entry_id && (
           <button className="link" onClick={() => setAttaching(!attaching)}>Attach to an entity</button>
         )}
@@ -116,7 +116,7 @@ export function EntityNotes({ entityId, readOnly }: { entityId: string; readOnly
     <section id="sec-notes" className="knowledge-section notes-section">
       <div className="section-head">
         <h2>My notes</h2>
-        {!readOnly && !adding && <button className="link" onClick={() => setAdding(true)}>+ Note</button>}
+        {!readOnly && !adding && <button className="link" onClick={() => setAdding(true)}><Icon name="plus" size={13} /> Note</button>}
       </div>
       {adding && <NoteComposer target={{ entity_id: entityId }} onDone={() => setAdding(false)} />}
       {data?.length === 0 && !adding && <p className="muted">No personal notes yet. Notes never change the scientific entries above.</p>}
